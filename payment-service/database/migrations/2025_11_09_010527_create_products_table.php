@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('bar_code')->unique();
             $table->string('name', 127)->min(3);
             $table->string('description', 255)->min(3);
             $table->boolean('is_active')->default(true);

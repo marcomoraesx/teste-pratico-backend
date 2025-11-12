@@ -17,6 +17,7 @@ class ProductFactory extends Factory
     public function definition(): array
     {
         return [
+            'bar_code' => fake()->unique()->numberBetween(1000000000000, 9999999999999),
             'name' => ucfirst(fake()->unique()->words(2, true)),
             'description' => fake()->sentence(8),
             'is_active' => fake()->boolean(90),

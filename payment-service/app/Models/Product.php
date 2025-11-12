@@ -16,6 +16,7 @@ class Product extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'bar_code',
         'name',
         'description',
         'is_active',
