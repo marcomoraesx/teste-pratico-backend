@@ -13,6 +13,7 @@ class ProductSeeder extends Seeder
     public function run(): void
     {
         Product::factory()->create([
+            'bar_code' => 1234567890123,
             'name' => 'Notebook Gamer',
             'description' => 'Notebook com RTX e processador Ryzen.',
             'is_active' => true,
@@ -20,6 +21,7 @@ class ProductSeeder extends Seeder
             'stock' => 12,
         ]);
         Product::factory()->create([
+            'bar_code' => 1234567890124,
             'name' => 'Teclado Mecânico RGB',
             'description' => 'Switches vermelhos e iluminação personalizável.',
             'is_active' => true,
