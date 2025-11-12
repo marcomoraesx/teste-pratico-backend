@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ListUsersRequest;
 use App\Http\Requests\RegisterUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
@@ -36,10 +36,11 @@ class UserController extends Controller
         ], 200);
     }
 
-    function list(Request $request): JsonResponse
+    function list(ListUsersRequest $request): JsonResponse
     {
-        $per_page = $request->query('per_page', 15);
-        $order = $request->query('order', 'asc');
+        $data = $request->validated();
+        $per_page = $data['per_page'] ?? 15;
+        $order = $data['order'] ?? 'asc';
         $users = $this->user_service->list($per_page, $order);
         return response()->json([
             'users' => $users
