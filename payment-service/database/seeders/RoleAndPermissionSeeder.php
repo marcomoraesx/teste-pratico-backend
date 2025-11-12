@@ -17,6 +17,7 @@ class RoleAndPermissionSeeder extends Seeder
     public function run(): void
     {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        $guard = 'api';
         $permissions = [
             'gateway.activate',
             'gateway.deactivate',
@@ -25,10 +26,12 @@ class RoleAndPermissionSeeder extends Seeder
             'user.view',
             'user.update',
             'user.delete',
+            'user.list',
             'product.create',
             'product.view',
             'product.update',
             'product.delete',
+            'product.list',
             'customer.list',
             'customer.detail',
             'sale.list',
@@ -36,9 +39,11 @@ class RoleAndPermissionSeeder extends Seeder
             'sale.refund',
         ];
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
+            Permission::firstOrCreate([
+                'name' => $permission,
+                'guard_name' => $guard,
+            ]);
         }
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
         $roles = [
             'ADMIN' => Permission::all(),
             'MANAGER' => Permission::whereIn('name', [
@@ -46,16 +51,19 @@ class RoleAndPermissionSeeder extends Seeder
                 'user.view',
                 'user.update',
                 'user.delete',
+                'user.list',
                 'product.create',
                 'product.view',
                 'product.update',
                 'product.delete',
+                'product.list',
             ])->get(),
             'FINANCE' => Permission::whereIn('name', [
                 'product.create',
                 'product.view',
                 'product.update',
                 'product.delete',
+                'product.list',
                 'sale.list',
                 'sale.detail',
                 'sale.refund',
@@ -69,7 +77,10 @@ class RoleAndPermissionSeeder extends Seeder
             ])->get(),
         ];
         foreach ($roles as $roleName => $perms) {
-            $role = Role::firstOrCreate(['name' => $roleName]);
+            $role = Role::firstOrCreate([
+                'name' => $roleName,
+                'guard_name' => $guard,
+            ]);
             $role->syncPermissions($perms);
         }
         $users = [
@@ -109,5 +120,6 @@ class RoleAndPermissionSeeder extends Seeder
             $roles = Role::all()->pluck('name')->toArray();
             $user->assignRole(fake()->randomElement($roles));
         });
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
     }
 }

@@ -14,6 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prependToGroup('api', App\Http\Middleware\ForceJsonResponse::class);
+        $middleware->alias([
+            'permissions' => \App\Http\Middleware\PermissionsApiMiddleware::class,
+            'roles' => \App\Http\Middleware\RolesApiMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e) {
