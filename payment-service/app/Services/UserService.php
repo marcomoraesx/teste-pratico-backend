@@ -16,7 +16,7 @@ class UserService
         return DB::transaction(function () use ($data) {
             $user_exists = User::where('email', $data['email'])->exists();
             if ($user_exists) {
-                ValidationException::withMessages([
+                throw ValidationException::withMessages([
                     'email' => ['The email has already been taken.'],
                 ]);
             }
