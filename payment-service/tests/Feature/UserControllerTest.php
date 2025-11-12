@@ -81,7 +81,7 @@ test('controller: list success returns paginated users', function () {
     $mock = Mockery::mock(UserService::class);
     $mock->shouldReceive('list')->once()->with(15, 'asc')->andReturn($paginator);
     $this->app->instance(UserService::class, $mock);
-    $response = $this->getJson('/api/user/list');
+    $response = $this->getJson('/api/user/list?page=1&per_page=15&order=asc');
     $response->assertStatus(200)->assertJsonStructure(['users']);
 });
 
@@ -89,7 +89,7 @@ test('controller: list error returns 400 on service failure', function () {
     $mock = Mockery::mock(UserService::class);
     $mock->shouldReceive('list')->once()->andThrow(new BadRequestException('Bad request'));
     $this->app->instance(UserService::class, $mock);
-    $response = $this->getJson('/api/user/list');
+    $response = $this->getJson('/api/user/list?page=1&per_page=15&order=asc');
     $response->assertStatus(400);
 });
 
