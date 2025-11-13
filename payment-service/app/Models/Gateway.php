@@ -17,6 +17,7 @@ class Gateway extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'class_name',
         'name',
         'is_active',
         'priority',
