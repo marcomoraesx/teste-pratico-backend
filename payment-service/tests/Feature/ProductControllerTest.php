@@ -29,7 +29,7 @@ test('controller: register success returns 201 and product', function () {
         'price' => 10.5,
         'stock' => 5,
     ];
-    $response = $this->postJson('/api/product', $payload);
+    $response = $this->postJson('/api/products', $payload);
     $response->assertStatus(201)->assertJsonStructure(['message', 'product']);
 });
 
@@ -46,7 +46,7 @@ test('controller: register error returns validation problem', function () {
         'price' => 10.5,
         'stock' => 5,
     ];
-    $response = $this->postJson('/api/product', $payload);
+    $response = $this->postJson('/api/products', $payload);
     $response
         ->assertStatus(422)
         ->assertJsonPath('errors.bar_code.0', 'The bar code has already been taken.');
@@ -57,7 +57,7 @@ test('controller: view success returns product', function () {
     $mock = Mockery::mock(ProductService::class);
     $mock->shouldReceive('view')->once()->with(5)->andReturn($product);
     $this->app->instance(ProductService::class, $mock);
-    $response = $this->getJson('/api/product/5');
+    $response = $this->getJson('/api/products/5');
     $response->assertStatus(200)->assertJsonStructure(['product']);
 });
 
@@ -65,7 +65,7 @@ test('controller: view error when not found returns 400', function () {
     $mock = Mockery::mock(ProductService::class);
     $mock->shouldReceive('view')->once()->with(99)->andThrow(new BadRequestException('Product not found.'));
     $this->app->instance(ProductService::class, $mock);
-    $response = $this->getJson('/api/product/99');
+    $response = $this->getJson('/api/products/99');
     $response->assertStatus(400);
 });
 
@@ -78,7 +78,7 @@ test('controller: list success returns paginated products', function () {
     $mock = Mockery::mock(ProductService::class);
     $mock->shouldReceive('list')->once()->with(15, 'asc')->andReturn($paginator);
     $this->app->instance(ProductService::class, $mock);
-    $response = $this->getJson('/api/product/list?page=1&per_page=15&order=asc');
+    $response = $this->getJson('/api/products/list?page=1&per_page=15&order=asc');
     $response->assertStatus(200)->assertJsonStructure(['products']);
 });
 
@@ -86,7 +86,7 @@ test('controller: list error returns 400 on service failure', function () {
     $mock = Mockery::mock(ProductService::class);
     $mock->shouldReceive('list')->once()->andThrow(new BadRequestException('Bad request'));
     $this->app->instance(ProductService::class, $mock);
-    $response = $this->getJson('/api/product/list?page=1&per_page=15&order=asc');
+    $response = $this->getJson('/api/products/list?page=1&per_page=15&order=asc');
     $response->assertStatus(400);
 });
 
@@ -100,7 +100,7 @@ test('controller: update success returns 200', function () {
         'price' => 2.0,
         'stock' => 10
     ];
-    $response = $this->patchJson('/api/product/3', $payload);
+    $response = $this->patchJson('/api/products/3', $payload);
     $response->assertStatus(200)->assertJsonFragment(['message' => 'Updated successful']);
 });
 
@@ -114,7 +114,7 @@ test('controller: update error returns 400 when service throws', function () {
         'price' => 2.0,
         'stock' => 10
     ];
-    $response = $this->patchJson('/api/product/999', $payload);
+    $response = $this->patchJson('/api/products/999', $payload);
     $response->assertStatus(400);
 });
 
@@ -122,7 +122,7 @@ test('controller: delete success returns 200', function () {
     $mock = Mockery::mock(ProductService::class);
     $mock->shouldReceive('delete')->once()->with(7);
     $this->app->instance(ProductService::class, $mock);
-    $response = $this->deleteJson('/api/product/7');
+    $response = $this->deleteJson('/api/products/7');
     $response->assertStatus(200)->assertJsonFragment(['message' => 'Deleted successful']);
 });
 
@@ -130,6 +130,6 @@ test('controller: delete error returns 400 when not found', function () {
     $mock = Mockery::mock(ProductService::class);
     $mock->shouldReceive('delete')->once()->with(777)->andThrow(new BadRequestException('Product not found.'));
     $this->app->instance(ProductService::class, $mock);
-    $response = $this->deleteJson('/api/product/777');
+    $response = $this->deleteJson('/api/products/777');
     $response->assertStatus(400);
 });
