@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\GatewayController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
@@ -36,5 +37,11 @@ Route::middleware(['throttle:api', 'throttle:server-error'])->group(function () 
         ->group(function () {
             Route::patch('/{gateway_id}/change-priority', [GatewayController::class, 'change_priority'])->middleware('permissions:gateway.change-priority');
             Route::patch('/{gateway_id}/activate-or-deactivate', [GatewayController::class, 'activate_or_deactivate'])->middleware('permissions:gateway.activate,gateway.deactivate');
+        });
+    Route::prefix('customers')
+        ->middleware(['auth:sanctum', 'roles:ADMIN,USER'])
+        ->group(function () {
+            Route::get('/list', [CustomerController::class, 'list'])->middleware('permissions:customer.list');
+            Route::get('/{customer_id}', [CustomerController::class, 'detail'])->middleware('permissions:customer.detail');
         });
 });

@@ -35,9 +35,9 @@ class Customer extends Model
     }
 
     /**
-     * Get the sales associated with the customer.
+     * Get the purchases associated with the customer.
      */
-    public function sales(): HasMany
+    public function purchases(): HasMany
     {
         return $this->hasMany(Sale::class);
     }
