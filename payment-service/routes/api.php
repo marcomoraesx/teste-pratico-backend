@@ -13,7 +13,7 @@ Route::middleware(['throttle:api', 'throttle:server-error'])->group(function () 
             Route::post('/login', [AuthController::class, 'login']);
             Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
         });
-    Route::prefix('user')
+    Route::prefix('users')
         ->middleware(['auth:sanctum', 'roles:ADMIN,MANAGER'])
         ->group(function () {
             Route::post('', [UserController::class, 'register'])->middleware('permissions:user.create');
@@ -22,7 +22,7 @@ Route::middleware(['throttle:api', 'throttle:server-error'])->group(function () 
             Route::patch('/{user_id}', [UserController::class, 'update'])->middleware('permissions:user.update');
             Route::delete('/{user_id}', [UserController::class, 'delete'])->middleware('permissions:user.delete');
         });
-    Route::prefix('product')
+    Route::prefix('products')
         ->middleware(['auth:sanctum', 'roles:ADMIN,MANAGER,FINANCE'])
         ->group(function () {
             Route::post('', [ProductController::class, 'register'])->middleware('permissions:product.create');
