@@ -106,15 +106,14 @@ class RoleAndPermissionSeeder extends Seeder
             ],
         ];
         foreach ($users as $data) {
-            User::factory()->create([
+            $user = User::factory()->create([
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
                 'remember_token' => Str::random(10),
-            ])->each(function ($user) use ($data) {
-                $user->assignRole($data['role']);
-            });
+            ]);
+            $user->assignRole($data['role']);
         }
         User::factory(10)->create()->each(function ($user) {
             $roles = Role::all()->pluck('name')->toArray();

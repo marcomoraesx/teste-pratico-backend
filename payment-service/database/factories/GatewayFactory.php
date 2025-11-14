@@ -18,6 +18,7 @@ class GatewayFactory extends Factory
     public function definition(): array
     {
         return [
+            'class_name' => fake()->unique()->lexify('?????GatewayProvider'),
             'name' => fake()->unique()->company(),
             'is_active' => fake()->boolean(85),
             'priority' => fake()->randomElement(Priority::values()),

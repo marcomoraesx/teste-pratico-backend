@@ -14,11 +14,13 @@ class GatewaySeeder extends Seeder
     public function run(): void
     {
         Gateway::factory()->create([
+            'class_name' => 'PagSeguroGatewayProvider',
             'name' => 'PagSeguro',
             'is_active' => true,
             'priority' => Priority::MEDIUM,
         ]);
         Gateway::factory()->create([
+            'class_name' => 'MercadoPagoGatewayProvider',
             'name' => 'MercadoPago',
             'is_active' => true,
             'priority' => Priority::HIGH,

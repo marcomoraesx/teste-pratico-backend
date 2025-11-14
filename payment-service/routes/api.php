@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\GatewayController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -29,5 +30,11 @@ Route::middleware(['throttle:api', 'throttle:server-error'])->group(function () 
             Route::get('/{product_id}', [ProductController::class, 'view'])->middleware('permissions:product.view');
             Route::patch('/{product_id}', [ProductController::class, 'update'])->middleware('permissions:product.update');
             Route::delete('/{product_id}', [ProductController::class, 'delete'])->middleware('permissions:product.delete');
+        });
+    Route::prefix('gateways')
+        ->middleware(['auth:sanctum', 'roles:USER,ADMIN'])
+        ->group(function () {
+            Route::patch('/{gateway_id}/change-priority', [GatewayController::class, 'change_priority'])->middleware('permissions:gateway.change-priority');
+            Route::patch('/{gateway_id}/activate-or-deactivate', [GatewayController::class, 'activate_or_deactivate'])->middleware('permissions:gateway.activate,gateway.deactivate');
         });
 });
