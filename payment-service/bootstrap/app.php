@@ -59,6 +59,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     return response()->json(
                         [
                             'message' => 'An internal server error occurred. Please try again later.',
+                            'error' => $message,
                             'code' => $status
                         ],
                         $status

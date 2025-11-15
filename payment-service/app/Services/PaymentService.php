@@ -8,7 +8,7 @@ class PaymentService
 {
     public function __construct(private PaymentProcessor $processor) {}
 
-    public function handle($payment): string
+    public function handle($payment): array
     {
         return $this->processor->process($payment);
     }

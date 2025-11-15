@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'pagseguro' => [
+        'base_url' => env('BASE_URL_PAGSEGURO'),
+        'auth_email' => env('AUTH_EMAIL_PAGSEGURO'),
+        'auth_token' => env('AUTH_TOKEN_PAGSEGURO')
+    ],
 ];
