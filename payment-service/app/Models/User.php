@@ -49,4 +49,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function toArray()
+    {
+        $array = parent::toArray();
+        $array['role'] = $this->roles->first()?->name;
+        unset($array['roles']);
+        return $array;
+    }
 }

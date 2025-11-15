@@ -20,7 +20,7 @@ class UserService
                     'email' => ['The email has already been taken.'],
                 ]);
             }
-            $user = User::create([
+            $user = User::with('roles')->create([
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
@@ -33,7 +33,7 @@ class UserService
 
     public function view(int $user_id): User
     {
-        $user = User::find($user_id);
+        $user = User::with('roles')->find($user_id);
         if (!$user) throw new BadRequestException('User not found.');
         return $user;
     }
@@ -41,6 +41,7 @@ class UserService
     public function list(int $per_page, string $order): LengthAwarePaginator
     {
         return User::query()
+            ->with('roles')
             ->orderBy('id', $order)
             ->paginate($per_page);
     }
