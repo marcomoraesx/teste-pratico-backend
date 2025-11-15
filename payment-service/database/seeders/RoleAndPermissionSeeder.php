@@ -74,6 +74,8 @@ class RoleAndPermissionSeeder extends Seeder
                 'gateway.change-priority',
                 'customer.list',
                 'customer.detail',
+                'sale.list',
+                'sale.detail',
             ])->get(),
         ];
         foreach ($roles as $roleName => $perms) {
