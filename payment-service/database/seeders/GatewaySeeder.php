@@ -21,7 +21,7 @@ class GatewaySeeder extends Seeder
         ]);
         Gateway::factory()->create([
             'class_name' => 'MercadoPagoGatewayProvider',
-            'name' => 'MercadoPago',
+            'name' => 'Mercado Pago',
             'is_active' => true,
             'priority' => Priority::HIGH,
         ]);

@@ -47,7 +47,6 @@ class SaleService
             }
             if ($discount_amount > $total_amount) throw new BadRequestException('Discount greater than the total purchase price.');
             $net_amount = $total_amount - $discount_amount;
-            $transaction = null;
             $payment = $data['payment'];
             $sale = Sale::create([
                 'customer_id' => $customer->id,

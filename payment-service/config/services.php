@@ -40,4 +40,10 @@ return [
         'auth_email' => env('AUTH_EMAIL_PAGSEGURO'),
         'auth_token' => env('AUTH_TOKEN_PAGSEGURO')
     ],
+
+    'mercadopago' => [
+        'base_url' => env('BASE_URL_MERCADOPAGO'),
+        'auth_token' => env('AUTH_TOKEN_MERCADOPAGO'),
+        'auth_secret' => env('AUTH_SECRET_MERCADOPAGO')
+    ],
 ];
