@@ -1,0 +1,1135 @@
+{
+	"info": {
+		"_postman_id": "adaeb436-d892-449e-b11d-f41006807d17",
+		"name": "teste-pratico-backend-collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28687135"
+	},
+	"item": [
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Jhon\",\n    \"email\": \"jhon@example.com\",\n    \"role\": \"USER\",\n    \"password\": \"password\",\n    \"password_confirmation\": \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							]
+						},
+						"description": "### 1\\. Objetivo do Endpoint\n\nCadastrar um novo usuário no sistema, definindo sua role e retornando token de autenticação + dados de usuário.\n\n---\n\n### 2\\. Título, Descrição e Contexto\n\n**Título:** Registro de Usuário  \n**Descrição:**\n\nCria um novo usuário persistido no banco, com validação completa de credenciais, restrições de unicidade e papel autorizado. Retorna token de acesso para login automático pós-registro.\n\n**Contexto de uso:**\n\nFormulário de cadastro, onboarding inicial, criação via painel administrativo ou integração externa de criação de contas.\n\n---\n\n### 3\\. Configurações do Endpoint\n\n| Propriedade | Valor |\n| --- | --- |\n| Método HTTP | POST |\n| Path | `/api/users` |\n| Autenticação prévia | Sim (Bearer Token) |\n| Permissões | Deve possuir permissão para criar usuários |\n| Tipo de Conteúdo | `application/json` |\n\n---\n\n### 4\\. Campos aceitos no Body\n\n#### `name`\n\n| Atributo | Detalhe |\n| --- | --- |\n| Tipo | string |\n| Obrigatório | Sim |\n| Restrições | `required`, `string`, `max:255` |\n| Exemplo válido | `\"Jhon Doe\"` |\n| Exemplo inválido | `\"\"`, `null`, `123`, `\"aaaa... (260 chars)\"` |\n\n#### `email`\n\n| Atributo | Detalhe |\n| --- | --- |\n| Tipo | string |\n| Obrigatório | Sim |\n| Restrições | `required`, `email`, `unique:users,email` |\n| Exemplo válido | `\"jhon@example.com\"` |\n| Exemplo inválido | `\"jhon.com\"`, `\"jhon@site\"`, `\"jhon@example.com\"` (se já existir) |\n\n#### `role`\n\n| Atributo | Detalhe |\n| --- | --- |\n| Tipo | string |\n| Obrigatório | Sim |\n| Restrições | `required`, `string`, `Rule::in([...])` |\n| Origem dos valores | Roles cadastradas via Spatie Permissions para guard `api` |\n| Exemplo válido | `\"ADMIN\"`, `\"USER\"` (depende do banco) |\n| Exemplo inválido | `\"guest\"`, `\"root\"`, `\"123\"`, vazio |\n\n**Significado esperado dos valores (exemplo real do ecossistema):**\n\n- `ADMIN` – acesso total e operações administrativas\n    \n- `USER` – usuário padrão, permissões limitadas\n    \n\n_(Observação: valores reais dependem do que existe no banco.)_\n\n#### `password`\n\n| Atributo | Detalhe |\n| --- | --- |\n| Tipo | string |\n| Obrigatório | Sim |\n| Restrições | `required`, `min:4`, `confirmed` |\n| Exemplo válido | `\"1234\"`, `\"password\"` |\n| Exemplo inválido | `\"123\"` (min inválido), `\"\"`, `null` |\n\n#### `password_confirmation`\n\n| Atributo | Detalhe |\n| --- | --- |\n| Tipo | string |\n| Obrigatório | Sim |\n| Restrições | Deve ser igual ao campo `password` |\n| Exemplo válido | `\"password\"` |\n| Exemplo inválido | `\"password123\"`, `null`, omitido |\n\n---\n\n### 5\\. Possíveis Respostas\n\n---\n\n#### 201 – Created (Sucesso)\n\n```\n{\n    \"message\": \"Registration successful\",\n    \"user\": {\n        \"id\": 10,\n        \"name\": \"Jhon\",\n        \"email\": \"jhon@example.com\",\n        \"role\": \"ADMIN\"\n    },\n    \"token\": \"eyJ0eXAiOiJKV1QiLCJhbGci...\"\n}\n\n ```\n\n---\n\n#### 400 – Requisição inválida\n\n```\n{\n    \"error\": \"Invalid request format\"\n}\n\n ```\n\n---\n\n#### 401 – Não autorizado (token inválido, expirado, ausente)\n\n```\n{\n    \"message\": \"Unauthorized\"\n}\n\n ```\n\n---\n\n#### 422 – Erro de validação\n\n```\n{\n    \"message\": \"The given data was invalid.\",\n    \"errors\": {\n        \"email\": [\n            \"The email has already been taken.\"\n        ],\n        \"role\": [\n            \"The selected role is invalid.\"\n        ],\n        \"password\": [\n            \"The password must be at least 4 characters.\",\n            \"The password confirmation does not match.\"\n        ]\n    }\n}\n\n ```\n\n---\n\n#### 500 – Erro interno\n\n```\n{\n    \"message\": \"Internal server error\"\n}\n\n ```\n\n---\n\n### 6\\. Exemplo de CURL\n\n```\ncurl --location 'http://localhost:8000/api/users' \\\n--header 'Accept: application/json' \\\n--header 'Content-Type: application/json' \\\n--header 'Authorization: Bearer SEU_TOKEN_AQUI' \\\n--data-raw '{\n    \"name\": \"Jhon\",\n    \"email\": \"jhon@example.com\",\n    \"role\": \"USER\",\n    \"password\": \"password\",\n    \"password_confirmation\": \"password\"\n}'\n\n ```\n\n---\n\n### 7\\. Exemplo de JSON válido\n\n```\n{\n    \"name\": \"Jhon\",\n    \"email\": \"jhon@example.com\",\n    \"role\": \"USER\",\n    \"password\": \"password\",\n    \"password_confirmation\": \"password\"\n}\n\n ```\n\n---\n\n### 8\\. Exemplo de JSON inválido\n\n```\n{\n    \"name\": \"\",\n    \"email\": \"jhon.com\",\n    \"role\": \"guest\",\n    \"password\": \"123\",\n    \"password_confirmation\": \"abc\"\n}\n\n ```\n\n---\n\n### 9\\. Tabela Resumo\n\n| Campo | Tipo | Obrigatório | Restrições | Exemplo válido | Exemplo inválido |\n| --- | --- | --- | --- | --- | --- |\n| name | string | Sim | max:255 | `\"Jhon\"` | `\"\"`, `123` |\n| email | string | Sim | email, unique | `\"jhon@example.com\"` | `\"jhon.com\"` |\n| role | string | Sim | enum (Role::in DB) | `\"USER\"` | `\"root\"` |\n| password | string | Sim | min:4, confirmed | `\"password\"` | `\"123\"` |\n| password_confirmation | string | Sim | must match password | `\"password\"` | `\"pass123\"` |"
+					},
+					"response": []
+				},
+				{
+					"name": "View",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/:user_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								":user_id"
+							],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "### 1\\. Objetivo do Endpoint\n\nObter e retornar os dados detalhados de um usuário específico, utilizando seu identificador único.\n\n---\n\n### 2\\. Título, Descrição e Contexto\n\n**Título:** Consulta de Usuário por ID\n\n**Descrição:**\n\nEste endpoint retorna informações completas de um usuário identificado pelo ID fornecido na URL. Somente usuários autenticados e com permissões apropriadas podem visualizar dados de outros usuários, dependendo das regras internas do sistema.\n\n**Contexto de uso:**\n\nListagens detalhadas em dashboards, consultas internas, módulos administrativos, perfis, relatórios ou auditorias.\n\n---\n\n### 3\\. Configurações do Endpoint\n\n| Propriedade | Valor |\n| --- | --- |\n| Método HTTP | GET |\n| Path | `/api/users/{user_id}` |\n| Autenticação prévia | Sim (Bearer Token válido) |\n| Permissões | Depende da política interna (ex: ADMIN ou dono da conta) |\n| Tipo de Conteúdo | `application/json` |\n| Body | Não requer body |\n\n---\n\n### 4\\. Campos aceitos no Body\n\nNenhum campo é aceito ou esperado no corpo da requisição.\n\nO único parâmetro é enviado via URL param.\n\n---\n\n### 4.1 URL Params\n\n#### `user_id`\n\n| Atributo | Detalhe |\n| --- | --- |\n| Tipo | integer |\n| Obrigatório | Sim |\n| Restrições | Deve existir na base de dados |\n| Exemplo válido | `1` |\n| Exemplo inválido | `\"abc\"`, `-1`, `0`, `9999999` (caso não exista) |\n\n---\n\n### 5\\. Possíveis Respostas\n\n---\n\n#### 200 – Sucesso\n\n```\n{\n    \"user\": {\n        \"id\": 1,\n        \"name\": \"Jhon Doe\",\n        \"email\": \"jhon@example.com\",\n        \"created_at\": \"2025-01-01T12:00:00Z\",\n        \"updated_at\": \"2025-01-01T12:00:00Z\",\n        \"role\": \"ADMIN\"\n    }\n}\n\n ```\n\n---\n\n#### 400 – Requisição inválida\n\n```\n{\n    \"error\": \"Invalid request format\"\n}\n\n ```\n\n---\n\n#### 401 – Não autorizado\n\n```\n{\n    \"message\": \"Unauthorized\"\n}\n\n ```\n\n---\n\n#### 404 – Usuário não encontrado\n\n```\n{\n    \"message\": \"User not found\"\n}\n\n ```\n\n---\n\n#### 500 – Erro interno\n\n```\n{\n    \"message\": \"Internal server error\"\n}\n\n ```\n\n---\n\n### 6\\. Exemplo de CURL\n\n```\ncurl --location 'http://localhost:8000/api/users/1' \\\n--header 'Accept: application/json' \\\n--header 'Authorization: Bearer SEU_TOKEN_AQUI'\n\n ```\n\n---\n\n### 7\\. Exemplo de JSON de resposta válido (200)\n\n```\n{\n    \"user\": {\n        \"id\": 1,\n        \"name\": \"Jhon Doe\",\n        \"email\": \"jhon@example.com\",\n        \"created_at\": \"2025-01-01T12:00:00Z\",\n        \"updated_at\": \"2025-01-01T12:00:00Z\",\n        \"role\": \"ADMIN\"\n    }\n}\n\n ```\n\n---\n\n### 8\\. Tabela Resumo\n\n| Campo | Local | Tipo | Obrigatório | Restrições | Exemplo válido | Exemplo inválido |\n| --- | --- | --- | --- | --- | --- | --- |\n| user_id | URL param | integer | Sim | Deve existir | `1` | `abc`, `0`, `-1` |"
+					},
+					"response": []
+				},
+				{
+					"name": "List",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/list?page=1&per_page=15&order=asc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"list"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "per_page",
+									"value": "15"
+								},
+								{
+									"key": "order",
+									"value": "asc"
+								}
+							]
+						},
+						"description": "### 1\\. Objetivo do Endpoint\n\nListar usuários do sistema de forma paginada e ordenada, permitindo controle de quantidade e direção de ordenação.\n\n---\n\n### 2\\. Título, Descrição e Contexto\n\n**Título:** Listagem Paginada de Usuários\n\n**Descrição:**\n\nRetorna uma lista de usuários com paginação, permitindo determinar quantidade de itens por página e ordenação crescente ou decrescente. Ideal para dashboards administrativos, relatórios, painéis e consultas públicas autorizadas.\n\n**Contexto de uso:**\n\nUtilizado em páginas de tabela de usuários, APIs de consulta paginada, integrações de backoffice e módulos de administração.\n\n---\n\n### 3\\. Configurações do Endpoint\n\n| Propriedade | Valor |\n| --- | --- |\n| Método HTTP | GET |\n| Path | `/api/users/list` |\n| Autenticação prévia | Sim (Bearer Token válido) |\n| Permissões | Dependente da regra do sistema (ex: ADMIN) |\n| Tipo de Conteúdo | `application/json` |\n| Envio no Body | Não. Utiliza query params |\n\n---\n\n### 4\\. Parâmetros Aceitos (Query Params)\n\n#### `page`\n\n| Atributo | Detalhe |\n| --- | --- |\n| Tipo | numeric |\n| Obrigatório | Sim |\n| Restrições | `required`, `numeric`, `min:1` |\n| Exemplo válido | `1`, `2`, `10` |\n| Exemplo inválido | `0`, `-1`, `\"abc\"`, vazio |\n\n#### `per_page`\n\n| Atributo | Detalhe |\n| --- | --- |\n| Tipo | numeric |\n| Obrigatório | Não |\n| Restrições | `nullable`, `numeric`, `min:1` |\n| Default | `15` caso não enviado |\n| Exemplo válido | `1`, `15`, `100` |\n| Exemplo inválido | `0`, `-10`, `\"abc\"` |\n\n#### `order` (ENUM)\n\n| Atributo | Detalhe |\n| --- | --- |\n| Tipo | string |\n| Obrigatório | Não |\n| Restrições | `nullable`, `string`, `in:asc,desc` |\n| Default | `asc` |\n| Exemplo válido | `asc`, `desc` |\n| Exemplo inválido | `\"ascending\"`, `1`, `\"up\"`, vazio |\n\n---\n\n### 7\\. ENUM – Significado\n\n| Valor | Significado |\n| --- | --- |\n| asc | Ordem crescente (A-Z / menor para maior) |\n| desc | Ordem decrescente (Z-A / maior para menor) |\n\n---\n\n### 5\\. Possíveis Respostas\n\n#### 200 – Sucesso\n\n```\n{\n    \"users\": [\n        {\n            \"id\": 1,\n            \"name\": \"Jhon Doe\",\n            \"email\": \"jhon@example.com\",\n            \"role\": \"USER\",\n            \"created_at\": \"2025-01-01T12:00:00Z\",\n            \"updated_at\": \"2025-01-01T12:00:00Z\",\n            \"role\": \"ADMIN\"\n        }\n    ]\n}\n\n ```\n\n#### 400 – Requisição inválida\n\n```\n{\n    \"error\": \"Invalid request format\"\n}\n\n ```\n\n#### 401 – Não autorizado\n\n```\n{\n    \"message\": \"Unauthorized\"\n}\n\n ```\n\n#### 422 – Erro de validação\n\n```\n{\n    \"message\": \"The given data was invalid.\",\n    \"errors\": {\n        \"page\": [\n            \"The page field is required.\"\n        ],\n        \"order\": [\n            \"The selected order is invalid.\"\n        ]\n    }\n}\n\n ```\n\n#### 500 – Erro interno\n\n```\n{\n    \"message\": \"Internal server error\"\n}\n\n ```\n\n---\n\n### 6\\. Exemplo de CURL\n\n```\ncurl --location 'http://localhost:8000/api/users/list?page=1&per_page=10&order=asc' \\\n--header 'Accept: application/json' \\\n--header 'Authorization: Bearer SEU_TOKEN_AQUI'\n\n ```\n\n---\n\n### 6.1 Exemplo de Response (200)\n\n```\n{\n    \"users\": [\n        {\n            \"id\": 1,\n            \"name\": \"Jhon Doe\",\n            \"email\": \"jhon@example.com\",\n            \"role\": \"USER\",\n            \"created_at\": \"2025-01-01T12:00:00Z\",\n            \"updated_at\": \"2025-01-01T12:00:00Z\"\n        },\n        {\n            \"id\": 2,\n            \"name\": \"Jane Smith\",\n            \"email\": \"jane@example.com\",\n            \"role\": \"ADMIN\",\n            \"created_at\": \"2025-02-05T09:21:55Z\",\n            \"updated_at\": \"2025-02-05T09:21:55Z\"\n        }\n    ]\n}\n\n ```\n\n---\n\n### 8\\. Tabela Resumo\n\n| Parâmetro | Tipo | Obrigatório | Restrições | Default | Exemplo válido | Exemplo inválido |\n| --- | --- | --- | --- | --- | --- | --- |\n| page | numeric | Sim | min:1 | Nenhum | `1` | `0`, `\"abc\"` |\n| per_page | numeric | Não | min:1 | `15` | `10` | `0`, `\"xyz\"` |\n| order | enum | Não | asc, desc | `asc` | `asc` | `\"ascending\"` |"
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Jhon\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users/:user_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								":user_id"
+							],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": "9"
+								}
+							]
+						},
+						"description": "### 1\\. Objetivo do endpoint\n\nAtualiza o nome de um usuário existente no sistema com base no seu ID.\n\n---\n\n### 2\\. Título, descrição e contexto de uso\n\n**Title:** Update User  \n**Descrição:** Atualiza os dados de um usuário já cadastrado, permitindo alterar seu nome.  \n**Contexto de uso:** Utilize esse endpoint quando for necessário atualizar informações do usuário, por exemplo, se o mesmo alterar seu nome ou corrigir informações de cadastro.\n\n---\n\n### 3\\. Método, path, autenticação e permissões\n\n**HTTP Method:** `PATCH`  \n**Path:** `/api/users/{user_id}`  \n**Autenticação:** Obrigatória  \n**Tipo de autenticação:** Bearer Token (JWT ou token similar)  \n**Permissões:** O endpoint presume que qualquer usuário autenticado pode executar a ação, pois o método `authorize()` retorna `true`. Caso haja regras de permissionamento no serviço, elas são aplicadas fora desse request.\n\n---\n\n### 4\\. Campos aceitos no body\n\n| Campo | Tipo | Obrigatório | Restrições | Descrição | Exemplos válidos | Exemplos inválidos |\n| --- | --- | --- | --- | --- | --- | --- |\n| name | string | Sim | Máximo 255 caracteres | Nome do usuário | `\"Ana\"`, `\"Gabriel Santos\"` | `\"\"`, `123`, `\"A\".repeat(300)` |\n\n#### Detalhamento das validações\n\n- `required`: o campo deve ser enviado obrigatoriamente\n    \n- `string`: precisa ser texto\n    \n- `max:255`: limite máximo de 255 caracteres\n    \n\n---\n\n### 5\\. Possíveis respostas\n\n#### Status 200 - Atualização realizada com sucesso\n\n```\n{\n  \"message\": \"Updated successful\"\n}\n\n ```\n\n#### Status 400 - Requisição mal formatada\n\n```\n{\n  \"error\": \"Bad request\"\n}\n\n ```\n\n#### Status 401 - Não autenticado\n\n```\n{\n  \"message\": \"Unauthenticated.\"\n}\n\n ```\n\n#### Status 422 - Erro de validação\n\n```\n{\n  \"message\": \"The given data was invalid.\",\n  \"errors\": {\n    \"name\": [\n      \"The name field is required.\"\n    ]\n  }\n}\n\n ```\n\nPossíveis mensagens de erro:\n\n- `\"The name field is required.\"`\n    \n- `\"The name must be a string.\"`\n    \n- `\"The name may not be greater than 255 characters.\"`\n    \n\n#### Status 500 - Erro interno\n\n```\n{\n  \"message\": \"Internal Server Error\"\n}\n\n ```\n\n---\n\n### 6\\. CURL, Body e Response de Exemplo\n\n#### CURL\n\n```\ncurl --location --request PATCH 'http://localhost:8000/api/users/9' \\\n--header 'Accept: application/json' \\\n--header 'Content-Type: application/json' \\\n--header 'Authorization: Bearer SEU_TOKEN_AQUI' \\\n--data '{\n    \"name\": \"Jhon\"\n}'\n\n ```\n\n#### Exemplo válido de body\n\n```\n{\n  \"name\": \"Maria Silva\"\n}\n\n ```\n\n#### Exemplo inválido de body\n\n```\n{\n  \"name\": \"\"\n}\n\n ```\n\n---\n\n### 7\\. Enums\n\nNão há enums nesse endpoint.\n\n---\n\n### 8\\. Tabela resumida\n\n| Campo | Tipo | Obrigatório | Restrições | Exemplo |\n| --- | --- | --- | --- | --- |\n| name | string | Sim | max:255, required | \"Carlos Lima\" |"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/:user_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								":user_id"
+							],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": "10"
+								}
+							]
+						},
+						"description": "### 1\\. Objetivo do endpoint\n\nRemover definitivamente um usuário do sistema com base no seu ID.\n\n---\n\n### 2\\. Título, descrição e contexto de uso\n\n**Title:** Delete User  \n**Descrição:** Realiza a exclusão de um usuário previamente cadastrado utilizando seu identificador único.  \n**Contexto de uso:** Chame esse endpoint quando desejar remover um usuário do sistema, seja por solicitação do próprio usuário, desativação de conta ou limpeza administrativa.\n\n---\n\n### 3\\. Método, path, autenticação e permissões\n\n**HTTP Method:** `DELETE`  \n**Path:** `/api/users/{user_id}`  \n**Autenticação:** Obrigatória  \n**Tipo de Autenticação:** Bearer Token  \n**Permissões:** O método não faz controle explícito de autorização, assumindo que usuários autenticados podem realizar a operação. Caso haja regras de permissão, elas são tratadas no serviço (`user_service`), não no request.\n\n---\n\n### 4\\. Campos aceitos no body\n\nEste endpoint **não recebe body**.  \n  \nA única informação necessária é o **parâmetro de rota (path param)** `user_id`.\n\n| Campo | Tipo | Obrigatório | Restrições | Exemplos válidos | Exemplos inválidos |\n| --- | --- | --- | --- | --- | --- |\n| user_id | integer | Sim | Deve existir no banco e ser numérico | `/api/users/25` | `/api/users/abc`, `/api/users/` |\n\n---\n\n### 5\\. Possíveis Respostas\n\n#### Status 200 - Exclusão realizada com sucesso\n\n```\n{\n  \"message\": \"Deleted successful\"\n}\n\n ```\n\n#### Status 400 - Requisição mal formatada\n\n```\n{\n  \"error\": \"Bad request\"\n}\n\n ```\n\n#### Status 401 - Não autenticado\n\n```\n{\n  \"message\": \"Unauthenticated.\"\n}\n\n ```\n\n#### Status 404 - Usuário não encontrado\n\n```\n{\n  \"message\": \"User not found\"\n}\n\n ```\n\n#### Status 500 - Erro interno inesperado\n\n```\n{\n  \"message\": \"Internal Server Error\"\n}\n\n ```\n\n---\n\n### 6\\. CURL, Body de exemplo e Response de exemplo\n\n#### CURL\n\n```\ncurl --location --request DELETE 'http://localhost:8000/api/users/10' \\\n--header 'Accept: application/json' \\\n--header 'Authorization: Bearer SEU_TOKEN_AQUI'\n\n ```\n\n#### Exemplo válido de chamada\n\n```\nDELETE /api/users/10\n\n ```\n\n#### Exemplo inválido\n\n```\nDELETE /api/users/teste\n\n ```\n\n#### Exemplo de response de sucesso\n\n```\n{\n  \"message\": \"Deleted successful\"\n}\n\n ```\n\n---\n\n### 7\\. Enums\n\nNão existem enums neste endpoint.\n\n---\n\n### 8\\. Tabela Resumida\n\n| Campo | Entrada | Tipo | Local | Obrigatório | Restrições | Exemplo |\n| --- | --- | --- | --- | --- | --- | --- |\n| user_id | path param | integer | URL | Sim | Deve ser numérico e existente | `/api/users/15` |"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"bar_code\": 1029384756123,\n    \"name\": \"Coffe\",\n    \"description\": \"Black coffe\",\n    \"price\": 2.0,\n    \"stock\": 20\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/products",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products"
+							]
+						},
+						"description": "### 1\\. Objetivo do endpoint\n\nRegistrar um novo produto no sistema com base nos dados informados no corpo da requisição.\n\n---\n\n### 2\\. Título, descrição e contexto de uso\n\n**Title:** Register Product  \n**Descrição:** Endpoint responsável por criar um novo produto utilizando código de barras, nome, descrição, preço e quantidade em estoque.  \n**Contexto de uso:** Utilize quando for necessário cadastrar produtos no catálogo do sistema, seja via painel administrativo ou integração externa.\n\n---\n\n### 3\\. Método, path, autenticação e permissões\n\n**HTTP Method:** `POST`  \n**Path:** `/api/products`  \n**Autenticação:** Obrigatória  \n**Tipo de Autenticação:** Bearer Token  \n**Permissões:** Não especificadas na request. O controle de permissões pode ocorrer no `product_service` ou middleware.\n\n---\n\n### 4\\. Campos aceitos no body\n\n| Campo | Tipo | Obrigatório | Restrições | Exemplos válidos | Exemplos inválidos |\n| --- | --- | --- | --- | --- | --- |\n| bar_code | numeric | Sim | `digits:13` e `unique:products,bar_code` | `7891234567890`, `1029384756123` | `123`, `ABC123456789`, `7891234567890` (já existente) |\n| name | string | Sim | `min:3`, `max:127` | `\"Coffee\"`, `\"Apple\"`, `\"Milk Powder\"` | `\"A\"`, `\"\"`, número ou boolean |\n| description | string | Sim | `min:3`, `max:255` | `\"Black coffee\"`, `\"Premium milk chocolate\"` | `\"OK\"`, `\"\"`, `true`, arrays |\n| price | numeric | Sim | `min:0` | `9.90`, `0`, `15`, `4.5` | `-5`, `\"free\"`, `true` |\n| stock | numeric | Sim | Sem limites definidos, mas deve ser numérico | `10`, `0`, `5000` | `\"abc\"`, `true`, vazio |\n\n---\n\n### Exemplos válidos\n\n```\n{\n  \"bar_code\": 1029384756123,\n  \"name\": \"Coffee\",\n  \"description\": \"Black coffee\",\n  \"price\": 2.0,\n  \"stock\": 20\n}\n\n ```\n\n### Exemplos inválidos\n\n```\n{\n  \"bar_code\": \"ABC\",\n  \"name\": \"A\",\n  \"description\": \"\",\n  \"price\": -1,\n  \"stock\": \"ten\"\n}\n\n ```\n\n---\n\n### 5\\. Possíveis respostas\n\n#### Status 201 - Sucesso\n\n```\n{\n  \"message\": \"Registration successful\",\n  \"product\": {\n    \"id\": 1,\n    \"bar_code\": 1029384756123,\n    \"name\": \"Coffee\",\n    \"description\": \"Black coffee\",\n    \"price\": 2.0,\n    \"stock\": 20,\n    \"created_at\": \"2025-01-01T12:00:00.000000Z\",\n    \"updated_at\": \"2025-01-01T12:00:00.000000Z\"\n  }\n}\n\n ```\n\n#### Status 400 - Requisição inválida\n\n```\n{\n  \"error\": \"Bad Request\"\n}\n\n ```\n\n#### Status 401 - Sem autenticação\n\n```\n{\n  \"message\": \"Unauthenticated.\"\n}\n\n ```\n\n#### Status 422 - Dados inválidos (exemplo)\n\n```\n{\n  \"message\": \"The given data was invalid.\",\n  \"errors\": {\n    \"bar_code\": [\"The bar_code field must be 13 digits.\"],\n    \"price\": [\"The price must be at least 0.\"]\n  }\n}\n\n ```\n\n#### Status 500 - Erro interno\n\n```\n{\n  \"message\": \"Internal Server Error\"\n}\n\n ```\n\n---\n\n### 6\\. CURL, Body de exemplo e Response de exemplo\n\n#### CURL\n\n```\ncurl --location 'http://localhost:8000/api/products' \\\n--header 'Accept: application/json' \\\n--header 'Content-Type: application/json' \\\n--header 'Authorization: Bearer SEU_TOKEN_AQUI' \\\n--data '{\n    \"bar_code\": 1029384756123,\n    \"name\": \"Coffee\",\n    \"description\": \"Black coffee\",\n    \"price\": 2.0,\n    \"stock\": 20\n}'\n\n ```\n\n---\n\n### 7\\. Enums\n\nNenhum enum presente neste endpoint.\n\n---\n\n### 8\\. Tabela Resumida\n\n| Campo | Tipo | Obrigatório | Restrições | Tamanho/Range | Exemplo válido |\n| --- | --- | --- | --- | --- | --- |\n| bar_code | numeric | Sim | unique, digits:13 | Exatos 13 dígitos | 1029384756123 |\n| name | string | Sim | min, max | min:3, max:127 | \"Coffee\" |\n| description | string | Sim | min, max | min:3, max:255 | \"Black coffee\" |\n| price | numeric | Sim | min:0 | \\>= 0 | 2.0 |\n| stock | numeric | Sim | Numeric | sem limite definido | 20 |"
+					},
+					"response": []
+				},
+				{
+					"name": "View",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/products/:product_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products",
+								":product_id"
+							],
+							"variable": [
+								{
+									"key": "product_id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "### 1\\. Objetivo do endpoint\n\nObter os detalhes de um produto específico com base no seu identificador único (`product_id`).\n\n---\n\n### 2\\. Título, descrição e contexto de uso\n\n**Title:** View Product  \n**Descrição:** Recupera informações completas de um produto previamente cadastrado.  \n**Contexto de uso:** Utilize quando for necessário exibir detalhes de um produto na interface, validar dados antes de uma edição ou consultar disponibilidade.\n\n---\n\n### 3\\. Método, path, autenticação e permissões\n\n**HTTP Method:** `GET`  \n**Path:** `/api/products/{product_id}`  \n**Autenticação:** Obrigatória (Bearer Token)  \n**Permissões:** Não declaradas explicitamente no endpoint. Poderão existir verificações internas via `product_service` ou por middleware.\n\n---\n\n### 4\\. Campos aceitos no body\n\nEste endpoint não exige e não aceita body.  \n  \nTodos os dados necessários devem ser enviados via URL parameter.\n\n#### Parâmetro de rota\n\n| Nome | Tipo | Obrigatório | Restrições | Exemplo válido | Exemplo inválido |\n| --- | --- | --- | --- | --- | --- |\n| product_id | numeric | Sim | Deve ser inteiro e existir no banco | `1`, `25` | `\"abc\"`, `-1`, `999999` (não existente) |\n\n---\n\n### 5\\. Possíveis respostas\n\n#### Status 200 - Sucesso\n\n```\n{\n  \"product\": {\n    \"id\": 1,\n    \"bar_code\": 1029384756123,\n    \"name\": \"Coffee\",\n    \"description\": \"Black coffee\",\n    \"price\": 2.0,\n    \"stock\": 20,\n    \"created_at\": \"2025-01-01T12:00:00.000000Z\",\n    \"updated_at\": \"2025-01-01T12:00:00.000000Z\"\n  }\n}\n\n ```\n\n#### Status 400 - Requisição inválida\n\n```\n{\n  \"message\": \"Bad Request\"\n}\n\n ```\n\n#### Status 401 - Sem autenticação\n\n```\n{\n  \"message\": \"Unauthenticated.\"\n}\n\n ```\n\n#### Status 404 - Produto não encontrado\n\n```\n{\n  \"message\": \"Product not found\"\n}\n\n ```\n\n#### Status 500 - Erro interno\n\n```\n{\n  \"message\": \"Internal Server Error\"\n}\n\n ```\n\n---\n\n### 6\\. CURL e Response de exemplo\n\n#### CURL\n\n```\ncurl --location 'http://localhost:8000/api/products/1' \\\n--header 'Accept: application/json' \\\n--header 'Authorization: Bearer SEU_TOKEN_AQUI'\n\n ```\n\n#### Response de exemplo\n\n```\n{\n  \"product\": {\n    \"id\": 1,\n    \"bar_code\": 1029384756123,\n    \"name\": \"Coffee\",\n    \"description\": \"Black coffee\",\n    \"price\": 2.0,\n    \"stock\": 20,\n    \"created_at\": \"2025-01-01T12:00:00.000000Z\",\n    \"updated_at\": \"2025-01-01T12:00:00.000000Z\"\n  }\n}\n\n ```\n\n---\n\n### 7\\. Enums\n\nNenhum enum presente neste endpoint.\n\n---\n\n### 8\\. Tabela resumo\n\n| Campo | Tipo | Local | Obrigatório | Restrições | Exemplo |\n| --- | --- | --- | --- | --- | --- |\n| product_id | numeric | URL param | Sim | Integer, must exist | `1` |"
+					},
+					"response": []
+				},
+				{
+					"name": "List",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/products/list?page=1&per_page=15&order=asc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products",
+								"list"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "per_page",
+									"value": "15"
+								},
+								{
+									"key": "order",
+									"value": "asc"
+								}
+							]
+						},
+						"description": "### 1\\. Objetivo do endpoint\n\nListar produtos com suporte a paginação e ordenação.\n\n---\n\n### 2\\. Título, descrição e contexto de uso\n\n**Title:** List Products  \n**Descrição:** Retorna uma coleção paginada de produtos cadastrados.  \n**Contexto de uso:** Utilize para exibir catálogos, relatórios, dashboards, pesquisas ou integrações externas.\n\n---\n\n### 3\\. Método, path, autenticação e permissões\n\n**HTTP Method:** `GET`  \n**Path:** `/api/products/list`  \n**Autenticação:** Obrigatória (Bearer Token)  \n**Permissões:** Não declaradas diretamente no endpoint  \n**Observação:** Todos os parâmetros são enviados como query params.\n\n---\n\n### 4\\. Campos aceitos no body (query params)\n\n| Campo | Tipo | Obrigatório | Restrições | Exemplo válido | Exemplo inválido |\n| --- | --- | --- | --- | --- | --- |\n| page | numeric | Sim | `min:1` | `1`, `3` | `0`, `-1`, `\"abc\"` |\n| per_page | numeric | Não | `min:1` | `10`, `50` | `0`, `\"xyz\"` |\n| order | string | Não | `in:asc,desc` | `asc`, `desc` | `up`, `down`, `123` |\n\n---\n\n### 5\\. Possíveis respostas\n\n#### Status 200 – Sucesso\n\n```\n{\n  \"products\": [\n    {\n      \"id\": 1,\n      \"bar_code\": 1029384756123,\n      \"name\": \"Coffee\",\n      \"description\": \"Black coffee\",\n      \"price\": 2.0,\n      \"stock\": 20\n    }\n  ]\n}\n\n ```\n\n#### Status 401 – Não autenticado\n\n```\n{\n  \"message\": \"Unauthenticated.\"\n}\n\n ```\n\n#### Status 422 – Erro de validação\n\n```\n{\n  \"message\": \"The given data was invalid.\",\n  \"errors\": {\n    \"page\": [\n      \"The page field is required.\"\n    ]\n  }\n}\n\n ```\n\nErros prováveis:\n\n- `page` ausente\n    \n- `page` não numérico\n    \n- `order` com valor inválido\n    \n\n#### Status 500 – Erro interno\n\n```\n{\n  \"message\": \"Internal Server Error\"\n}\n\n ```\n\n---\n\n### 6\\. CURL, JSON body e response de exemplo\n\n#### CURL\n\n```\ncurl --location 'http://localhost:8000/api/products/list?page=1&per_page=15&order=asc' \\\n--header 'Accept: application/json' \\\n--header 'Authorization: Bearer SEU_TOKEN_AQUI'\n\n ```\n\n#### Exemplo de chamada válida\n\n```\nGET /api/products/list?page=2&per_page=20&order=desc\n\n ```\n\n#### Exemplo inválido\n\n```\nGET /api/products/list?page=0&order=up\n\n ```\n\n#### Response exemplo\n\n```\n{\n  \"products\": [\n    {\n      \"id\": 5,\n      \"bar_code\": 9988776655443,\n      \"name\": \"Green Tea\",\n      \"description\": \"Herbal tea\",\n      \"price\": 3.5,\n      \"stock\": 50\n    }\n  ]\n}\n\n ```\n\n---\n\n### 7\\. Enums\n\n| Campo | Valores aceitos | Significado |\n| --- | --- | --- |\n| order | `asc`, `desc` | `asc` = crescente, `desc` = decrescente |\n\n---\n\n### 8\\. Tabela resumo\n\n| Campo | Tipo | Local | Obrigatório | Restrições | Exemplo |\n| --- | --- | --- | --- | --- | --- |\n| page | numeric | query param | Sim | `min:1` | `1` |\n| per_page | numeric | query param | Não | `min:1` | `15` |\n| order | string | query param | Não | `asc` ou `desc` | `asc` |"
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test\",\n    \"description\": \"Test Product\",\n    \"is_active\": false,\n    \"price\": 23.0,\n    \"stock\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/products/:product_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products",
+								":product_id"
+							],
+							"variable": [
+								{
+									"key": "product_id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "### 1\\. Objetivo do Endpoint\n\nAtualizar os dados de um produto existente com base em seu ID, permitindo alterar nome, descrição, preço, estoque e status ativo.\n\n---\n\n### 2\\. Título, Descrição e Contexto\n\n**Título:** Atualização de Produto  \n**Descrição:** Esse endpoint atualiza atributos de um produto já cadastrado. Ideal para rotinas administrativas, ajustes de catálogo ou integrações de sistemas ERP e marketplace.  \n**Contexto de Uso:** Usado quando o produto já existe e é necessária uma atualização parcial ou total de seus campos.\n\n---\n\n### 3\\. Detalhes Técnicos\n\n**Método:** PATCH  \n**Path:** `/api/products/{product_id}`  \n**Autenticação:** Bearer Token (JWT recomendado)  \n**Permissões:** Apenas usuários autenticados. Perfis administrativos sugeridos (não obrigatório pelo código).\n\n---\n\n### 4\\. Campos Aceitos no Body\n\n| Campo | Tipo | Obrigatório | Restrições | Descrição |\n| --- | --- | --- | --- | --- |\n| name | string | sim | min:3, max:127 | Nome do produto |\n| description | string | não | min:3, max:255 | Descrição opcional do produto |\n| is_active | boolean | sim | true ou false | Status de ativação |\n| price | numeric | sim | min:0 | Preço do produto |\n| stock | numeric | sim | sem min definido | Estoque disponível |\n\n#### Exemplos válidos\n\n```\n{\n  \"name\": \"SSD Kingston 512GB\",\n  \"description\": \"Unidade de armazenamento sólida\",\n  \"is_active\": true,\n  \"price\": 299.90,\n  \"stock\": 50\n}\n\n ```\n\n#### Exemplos inválidos\n\n```\n{\n  \"name\": \"A\",   // menor que 3 chars\n  \"description\": 123, // não é string\n  \"is_active\": \"yes\", // inválido\n  \"price\": -10, // menor que zero\n  \"stock\": \"cinquenta\" // precisa ser numérico\n}\n\n ```\n\n---\n\n### 5\\. Possíveis Respostas\n\n#### 200 – Sucesso\n\n```\n{\n  \"message\": \"Updated successful\"\n}\n\n ```\n\n#### 400 – Bad Request\n\nPossível quando o ID é inválido ou payload mal formatado.\n\n```\n{\n  \"error\": \"Invalid request format\"\n}\n\n ```\n\n#### 401 – Unauthorized\n\n```\n{\n  \"message\": \"Unauthenticated\"\n}\n\n ```\n\n#### 422 – Unprocessable Entity (Erro de validação)\n\n```\n{\n  \"message\": \"The given data was invalid.\",\n  \"errors\": {\n    \"name\": [\n      \"The name field must be at least 3 characters.\"\n    ]\n  }\n}\n\n ```\n\n#### 500 – Internal Server Error\n\n```\n{\n  \"message\": \"Internal server error\"\n}\n\n ```\n\n---\n\n### 6\\. CURL, JSON Body e Response\n\n#### CURL\n\n```\ncurl --location --request PATCH 'http://localhost:8000/api/products/1' \\\n--header 'Accept: application/json' \\\n--header 'Content-Type: application/json' \\\n--header 'Authorization: Bearer {token}' \\\n--data '{\n    \"name\": \"SSD Gamer RGB\",\n    \"description\": \"NVMe Gen4 2TB\",\n    \"is_active\": true,\n    \"price\": 899.90,\n    \"stock\": 10\n}'\n\n ```\n\n#### Request Body Exemplo\n\n```\n{\n  \"name\": \"Cadeira Gamer Spider\",\n  \"description\": \"Acolchoada premium\",\n  \"is_active\": true,\n  \"price\": 1299.99,\n  \"stock\": 7\n}\n\n ```\n\n#### Response Exemplo\n\n```\n{\n  \"message\": \"Updated successful\"\n}\n\n ```\n\n---\n\n### 7\\. Enums Existentes\n\nNenhum enum nesse endpoint.\n\n---\n\n### 8\\. Tabela Resumida\n\n| Campo | Tipo | Obrigatório | Regras |\n| --- | --- | --- | --- |\n| name | string | sim | 3 a 127 chars |\n| description | string | não | 3 a 255 chars |\n| is_active | boolean | sim | true ou false |\n| price | numeric | sim | \\>= 0 |\n| stock | numeric | sim | numeric |"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/products/:product_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products",
+								":product_id"
+							],
+							"variable": [
+								{
+									"key": "product_id",
+									"value": "5"
+								}
+							]
+						},
+						"description": "### 1\\. Objetivo do Endpoint\n\nRemover permanentemente um produto existente a partir do seu identificador numérico.\n\n---\n\n### 2\\. Título, Descrição e Contexto\n\n**Título:** Remoção de Produto  \n**Descrição:** Realiza a exclusão definitiva de um produto cadastrado.  \n**Contexto de Uso:** Utilizado em sistemas de catálogo, marketplace ou ERP quando o produto não deve mais estar disponível em listagens ou relatórios ativos.\n\n---\n\n### 3\\. Detalhes Técnicos\n\n**Método:** DELETE  \n**Path:** `/api/products/{product_id}`  \n**Autenticação:** Token Bearer obrigatório  \n**Permissões:** Apenas usuários autenticados. Recomendado para administradores ou operadores com permissão de gerenciamento.\n\n---\n\n### 4\\. Campos Aceitos no Body\n\nNenhum corpo é aceito ou necessário no request.  \n  \nToda a interação depende apenas do parâmetro na URL.\n\n---\n\n### Parâmetros da URL\n\n| Parâmetro | Tipo | Obrigatório | Restrições |\n| --- | --- | --- | --- |\n| product_id | integer | sim | deve existir no banco |\n\n#### Exemplos válidos\n\n`/api/products/10`, `/api/products/342`, `/api/products/1`\n\n#### Exemplos inválidos\n\n`/api/products/abc`, `/api/products/0`, `/api/products/-9`, `/api/products/999999` (se inexistente)\n\n---\n\n### 5\\. Possíveis Respostas\n\n#### 200 – Sucesso\n\n```\n{\n  \"message\": \"Deleted successful\"\n}\n\n ```\n\n#### 400 – Bad Request\n\nPossível quando o ID é inválido ou mal formatado.\n\n```\n{\n  \"error\": \"Invalid product id\"\n}\n\n ```\n\n#### 401 – Unauthorized\n\n```\n{\n  \"message\": \"Unauthenticated\"\n}\n\n ```\n\n#### 404 – Not Found (provável, mesmo não visível no código)\n\n```\n{\n  \"message\": \"Product not found\"\n}\n\n ```\n\n#### 500 – Internal Server Error\n\n```\n{\n  \"message\": \"Internal server error\"\n}\n\n ```\n\n---\n\n### 6\\. CURL, Body e Response\n\n#### CURL\n\n```\ncurl --location --request DELETE 'http://localhost:8000/api/products/5' \\\n--header 'Accept: application/json' \\\n--header 'Authorization: Bearer {your_token}'\n\n ```\n\n#### Exemplo de resposta\n\n```\n{\n  \"message\": \"Deleted successful\"\n}\n\n ```\n\n---\n\n### 7\\. Enums\n\nNenhum enum envolvido.\n\n---\n\n### 8\\. Tabela Resumida dos Campos\n\n| Campo | Local | Tipo | Obrigatório | Restrições |\n| --- | --- | --- | --- | --- |\n| product_id | URL param | integer | sim | \\> 0 e existente |"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Gateways",
+			"item": [
+				{
+					"name": "Change Priority",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"priority\": 3\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gateways/:gateway_id/change-priority",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gateways",
+								":gateway_id",
+								"change-priority"
+							],
+							"variable": [
+								{
+									"key": "gateway_id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "### 1\\. Objetivo do Endpoint\n\nAlterar a prioridade de um gateway já cadastrado no sistema, garantindo que o valor informado seja válido e dentro do enum definido.\n\n---\n\n### 2\\. Título, Descrição e Contexto\n\n**Título:** Alteração de Prioridade do Gateway  \n**Descrição:** Atualiza o nível de prioridade de um gateway existente com base em valores válidos definidos no enum `Priority`.  \n**Contexto de Uso:** Utilizado em sistemas que definem ordem de execução, fallback, ranking ou escolha de rota de processamento.\n\n---\n\n### 3\\. Detalhes Técnicos\n\n**Método:** PATCH  \n**Path:** `/api/gateways/{gateway_id}/change-priority`  \n**Autenticação:** Bearer Token obrigatório  \n**Permissões:** Usuário autenticado; idealmente permissões administrativas ou operacionais avançadas.\n\n---\n\n### 4\\. Campos Aceitos no Body\n\n| Campo | Tipo | Obrigatório | Restrições | Exemplos Válidos | Exemplos Inválidos |\n| --- | --- | --- | --- | --- | --- |\n| priority | numeric | sim | obrigatório, deve existir no enum Priority | 1, 2, 3 | 0, -1, 999, \"texto\", null |\n\n**Validação aplicada**\n\n- `required`\n    \n- `numeric`\n    \n- `Rule::in(Priority::values())` → só aceita valores definidos no Enum `Priority`\n    \n\n---\n\n### 7\\. Enum Priority (Significados)\n\nComo a lista oficial não foi enviada, considere descrição padrão baseada em hierarquia numérica:\n\n| Valor | Significado (possível interpretação) |\n| --- | --- |\n| 3 | Máxima prioridade |\n| 2 | Prioridade intermediária |\n| 1 | Baixa prioridade |\n\nSe quiser, posso ajustar caso forneça os valores reais do enum.\n\n---\n\n### 5\\. Possíveis Respostas\n\n#### 200 - Sucesso\n\n```\n{\n  \"message\": \"Updated successful\"\n}\n\n ```\n\n#### 400 - Bad Request\n\n```\n{\n  \"error\": \"Invalid request format\"\n}\n\n ```\n\n#### 401 - Unauthorized\n\n```\n{\n  \"message\": \"Unauthenticated\"\n}\n\n ```\n\n#### 422 - Unprocessable Entity (erros de validação)\n\n```\n{\n  \"message\": \"The given data was invalid.\",\n  \"errors\": {\n      \"priority\": [\n          \"The priority field is required.\",\n          \"The priority must be a number.\",\n          \"The selected priority is invalid.\"\n      ]\n  }\n}\n\n ```\n\n#### 500 - Internal Server Error\n\n```\n{\n  \"message\": \"Internal server error\"\n}\n\n ```\n\n---\n\n### 6\\. CURL, Request Body e Response Exemplo\n\n#### CURL\n\n```\ncurl --location --request PATCH 'http://localhost:8000/api/gateways/1/change-priority' \\\n--header 'Accept: application/json' \\\n--header 'Content-Type: application/json' \\\n--header 'Authorization: Bearer {your_token_here}' \\\n--data '{\n    \"priority\": 3\n}'\n\n ```\n\n#### Request Body Exemplo\n\n```\n{\n  \"priority\": 2\n}\n\n ```\n\n#### Response Exemplo\n\n```\n{\n  \"message\": \"Updated successful\"\n}\n\n ```\n\n---\n\n### 8\\. Tabela Resumida dos Campos\n\n| Campo | Tipo | Obrigatório | Local | Validações |\n| --- | --- | --- | --- | --- |\n| gateway_id | integer | sim | URL param | deve existir no sistema |\n| priority | numeric | sim | body | required, numeric, enum valid |"
+					},
+					"response": []
+				},
+				{
+					"name": "Activate or Deactivate",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"activate\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gateways/:gateway_id/activate-or-deactivate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gateways",
+								":gateway_id",
+								"activate-or-deactivate"
+							],
+							"variable": [
+								{
+									"key": "gateway_id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "### 1\\. Objetivo do Endpoint\n\nAlterar o estado ativo de um gateway definido, permitindo ativação ou desativação controlada de acordo com necessidade operacional.\n\n---\n\n### 2\\. Título, Descrição e Contexto\n\n**Título:** Ativar ou Desativar Gateway  \n**Descrição:** Modifica o status de operação de um gateway, permitindo habilitar ou suspender seu uso sem removê-lo do sistema.  \n**Contexto de Uso:** Ideal para cenários onde é necessário bloquear temporariamente integrações sem apagar registros ou quando se quer reativar rapidamente.\n\n---\n\n### 3\\. Detalhes Técnicos\n\n**Método:** PATCH  \n**Path:** `/api/gateways/{gateway_id}/activate-or-deactivate`  \n**Autenticação:** Bearer Token obrigatório  \n**Permissões:** Usuário autenticado com nível de acesso operacional ou administrativo.\n\n---\n\n### 4\\. Campos Aceitos no Body\n\n| Campo | Tipo | Obrigatório | Restrições | Exemplos Válidos | Exemplos Inválidos |\n| --- | --- | --- | --- | --- | --- |\n| activate | boolean | sim | precisa ser booleano | true, false | 1, 0, \"yes\", \"no\", null |\n\n**Validações**\n\n- `required`\n    \n- `boolean`\n    \n\n---\n\n### 5\\. Possíveis Respostas\n\n#### 200 - Sucesso\n\n```\n{\n  \"message\": \"Updated successful\"\n}\n\n ```\n\n#### 400 - Bad Request\n\n```\n{\n  \"error\": \"Invalid request format\"\n}\n\n ```\n\n#### 401 - Unauthorized\n\n```\n{\n  \"message\": \"Unauthenticated\"\n}\n\n ```\n\n#### 422 - Unprocessable Entity (erros de validação)\n\n```\n{\n  \"message\": \"The given data was invalid.\",\n  \"errors\": {\n      \"activate\": [\n          \"The activate field is required.\",\n          \"The activate field must be true or false.\"\n      ]\n  }\n}\n\n ```\n\n#### 500 - Internal Server Error\n\n```\n{\n  \"message\": \"Internal server error\"\n}\n\n ```\n\n---\n\n### 6\\. CURL, Request Body Exemplo e Response\n\n#### CURL\n\n```\ncurl --location --request PATCH 'http://localhost:8000/api/gateways/1/activate-or-deactivate' \\\n--header 'Accept: application/json' \\\n--header 'Content-Type: application/json' \\\n--header 'Authorization: Bearer {your_token_here}' \\\n--data '{\n    \"activate\": false\n}'\n\n ```\n\n#### Request Body Exemplo\n\n```\n{\n  \"activate\": true\n}\n\n ```\n\n#### Response Exemplo\n\n```\n{\n  \"message\": \"Updated successful\"\n}\n\n ```\n\n---\n\n### 8\\. Tabela Resumida dos Campos\n\n| Campo | Tipo | Obrigatório | Local | Validações |\n| --- | --- | --- | --- | --- |\n| gateway_id | integer | sim | URL param | deve existir no sistema |\n| activate | boolean | sim | body | required, boolean |"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Customers",
+			"item": [
+				{
+					"name": "Detail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/customers/:customer_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"customers",
+								":customer_id"
+							],
+							"variable": [
+								{
+									"key": "customer_id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "### 1\\. Objetivo do Endpoint\n\nObter os dados completos de um cliente específico por meio de seu identificador único.\n\n---\n\n### 2\\. Título, Descrição e Contexto\n\n**Título:** Consultar Detalhes de um Cliente  \n**Descrição:** Retorna informações cadastradas de um cliente, permitindo visualização detalhada de seus atributos e status.  \n**Contexto de Uso:** Ideal para dashboards administrativos, análises de perfil, telas de edição ou visualização sem alteração.\n\n---\n\n### 3\\. Detalhes Técnicos\n\n**Método:** GET  \n**Path:** `/api/customers/{customer_id}`  \n**Autenticação:** Bearer Token obrigatório  \n**Permissões:** Usuário autenticado com acesso operacional ou administrativo.\n\n---\n\n### 4\\. Parâmetros Aceitos\n\nNão há body. O dado necessário é passado via URL param.\n\n| Campo | Tipo | Obrigatório | Local | Restrições | Exemplo Válido | Exemplo Inválido |\n| --- | --- | --- | --- | --- | --- | --- |\n| customer_id | integer | sim | URL | deve ser numérico e existir no sistema | 1, 22 | abc, -1, null |\n\n---\n\n### 5\\. Possíveis Respostas\n\n#### 200 - Sucesso\n\n```\n{\n  \"customer\": {\n    \"id\": 1,\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"phone\": \"+5511999999999\",\n    \"document\": \"12345678910\",\n    \"created_at\": \"2025-01-15T21:45:25Z\",\n    \"updated_at\": \"2025-01-21T14:10:01Z\",\n    \"purchases\": [...]\n  }\n}\n\n ```\n\n#### 400 - Bad Request\n\n```\n{\n  \"error\": \"Invalid request format\"\n}\n\n ```\n\n#### 401 - Unauthorized\n\n```\n{\n  \"message\": \"Unauthenticated\"\n}\n\n ```\n\n#### 404 - Not Found\n\n```\n{\n  \"message\": \"Customer not found\"\n}\n\n ```\n\n#### 500 - Internal Server Error\n\n```\n{\n  \"message\": \"Internal server error\"\n}\n\n ```\n\n---\n\n### 6\\. CURL, Body Exemplo e Response\n\n#### CURL\n\n```\ncurl --location 'http://localhost:8000/api/customers/1' \\\n--header 'Accept: application/json' \\\n--header 'Authorization: Bearer {your_token_here}'\n\n ```\n\n#### Request Body Exemplo\n\nNão se aplica.\n\n#### Response Exemplo (200)\n\n```\n{\n  \"customer\": {\n    \"id\": 1,\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"phone\": \"+5511999999999\",\n    \"document\": \"12345678910\",\n    \"created_at\": \"2025-01-15T21:45:25Z\",\n    \"updated_at\": \"2025-01-21T14:10:01Z\",\n    \"purchases\": [...]\n  }\n}\n\n ```\n\n---\n\n### 8\\. Tabela Resumida\n\n| Campo | Tipo | Obrigatório | Local | Validações |\n| --- | --- | --- | --- | --- |\n| customer_id | integer | sim | URL param | deve existir e ser válido |"
+					},
+					"response": []
+				},
+				{
+					"name": "List",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/customers/list?page=1&per_page=15&order=asc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"customers",
+								"list"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "per_page",
+									"value": "15"
+								},
+								{
+									"key": "order",
+									"value": "asc"
+								}
+							]
+						},
+						"description": "## 1\\. Objetivo do Endpoint\n\nListar clientes cadastrados com suporte a paginação e ordenação, permitindo consulta organizada e escalável.\n\n---\n\n## 2\\. Título, Descrição e Contexto de Uso\n\n**Título:** Listagem de Clientes  \n**Descrição:** Retorna uma lista paginada e ordenada de clientes disponíveis no sistema.  \n**Contexto de Uso:** Ideal para dashboards administrativos, painéis CRM ou qualquer tela de consulta com paginação e ordenação controlada.\n\n---\n\n## 3\\. Detalhes Técnicos\n\n| Item | Valor |\n| --- | --- |\n| Método HTTP | GET |\n| Path | `/api/customers/list` |\n| Autenticação | Obrigatória (Bearer Token) |\n| Permissões | Usuário autenticado com acesso ao módulo de clientes |\n\n---\n\n## 4\\. Campos Aceitos (Query Params)\n\nEsse endpoint **não recebe body JSON**, somente parâmetros via URL.\n\n| Campo | Tipo | Obrigatório | Restrições | Descrição |\n| --- | --- | --- | --- | --- |\n| page | numeric | Sim | min:1 | Número da página atual |\n| per_page | numeric | Não | min:1 | Quantidade de registros por página |\n| order | string | Não | enum: asc, desc | Ordenação pela criação |\n\n### Exemplos válidos\n\n| Exemplo | Descrição |\n| --- | --- |\n| `?page=1` | Mínimo necessário |\n| `?page=2&per_page=25` | Paginação customizada |\n| `?page=1&order=desc` | Ordenação invertida |\n| `?page=1&per_page=10&order=asc` | Combinando tudo |\n\n### Exemplos inválidos\n\n| Exemplo | Motivo |\n| --- | --- |\n| `?page=0` | min inválido |\n| `?page=abc` | tipo inválido |\n| `?order=random` | enum inválido |\n| `?per_page=-5` | min inválido |\n\n---\n\n## 5\\. Possíveis Respostas\n\n### 200 - OK\n\n```\n{\n  \"customers\": [\n    {\n      \"id\": 1,\n      \"name\": \"John Doe\",\n      \"email\": \"john.doe@example.com\",\n      \"created_at\": \"2024-01-20T10:30:00Z\"\n    }\n  ]\n}\n\n ```\n\n### 400 - Bad Request\n\nCausas comuns: query param mal formatado\n\n```\n{\n  \"error\": \"Invalid parameter format\"\n}\n\n ```\n\n### 401 - Unauthorized\n\n```\n{\n  \"message\": \"Unauthenticated.\"\n}\n\n ```\n\n### 422 - Validation Error\n\n```\n{\n  \"message\": \"The given data was invalid.\",\n  \"errors\": {\n    \"page\": [\n      \"The page field is required.\"\n    ]\n  }\n}\n\n ```\n\n### 500 - Internal Server Error\n\n```\n{\n  \"error\": \"Unexpected server error\"\n}\n\n ```\n\n---\n\n## 6\\. CURL e Exemplos\n\n### CURL\n\n```\ncurl --location 'http://localhost:8000/api/customers/list?page=1&per_page=15&order=asc' \\\n--header 'Accept: application/json' \\\n--header 'Authorization: Bearer {token}'\n\n ```\n\n### Body Exemplo\n\nNenhum — parâmetros somente via URL.\n\n---\n\n## 7\\. Enums\n\n| Valor | Significado |\n| --- | --- |\n| asc | crescente |\n| desc | decrescente |\n\n---\n\n## 8\\. Tabela Resumo Final\n\n| Campo | Tipo | Obrigatório | Restrições |\n| --- | --- | --- | --- |\n| page | numeric | Sim | min:1 |\n| per_page | numeric | Não | min:1 |\n| order | string | Não | enum: asc, desc |"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Sales",
+			"item": [
+				{
+					"name": "Detail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/sales/:sale_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sales",
+								":sale_id"
+							],
+							"variable": [
+								{
+									"key": "sale_id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "## 1\\. Objetivo do Endpoint\n\nObter os detalhes completos de uma venda previamente registrada, incluindo informações de cliente, itens, valores, pagamento e status.\n\n---\n\n## 2\\. Título, Descrição e Contexto de Uso\n\n**Título:** Detalhar Venda  \n**Descrição:** Retorna os dados completos de uma venda buscando pelo seu identificador único.  \n**Contexto de Uso:** Exibição em dashboards, histórico do cliente, relatórios financeiros, acompanhamento de auditoria ou qualquer consulta referente a uma venda existente.\n\n---\n\n## 3\\. Detalhes Técnicos\n\n| Item | Valor |\n| --- | --- |\n| Método HTTP | GET |\n| Path | `/api/sales/{sale_id}` |\n| URL Exemplo | `/api/sales/1` |\n| Autenticação | Obrigatória (Bearer Token) |\n| Permissões | Usuário autenticado com acesso ao módulo de vendas |\n\nNão há body no request.\n\n---\n\n## 4\\. Campos Aceitos (Path Params)\n\n| Campo | Tipo | Obrigatório | Restrições | Descrição |\n| --- | --- | --- | --- | --- |\n| sale_id | numeric | Sim | Deve ser um identificador válido existente | ID da venda consultada |\n\n---\n\n## 5\\. Possíveis Respostas\n\n### 200 - OK (Sucesso)\n\n```\n{\n  \"sale\": {\n    \"id\": 1,\n    \"customer_id\": 5,\n    \"items\": [\n      {\n        \"product_id\": 2,\n        \"quantity\": 1,\n        \"price\": 50\n      },\n      {\n        \"product_id\": 9,\n        \"quantity\": 3,\n        \"price\": 15\n      }\n    ],\n    \"transaction\": {...},\n    \"discount_amount\": 10,\n    \"total_amount\": 95,\n    \"status\": \"COMPLETED\",\n    \"created_at\": \"2025-01-01T12:00:00Z\"\n  }\n}\n\n ```\n\n### 400 - Bad Request\n\n```\n{\n  \"error\": \"Invalid request format\"\n}\n\n ```\n\n### 401 - Unauthorized\n\n```\n{\n  \"message\": \"Unauthenticated.\"\n}\n\n ```\n\n### 404 - Not Found (se aplicável)\n\n```\n{\n  \"message\": \"Sale not found\"\n}\n\n ```\n\n### 500 - Internal Server Error\n\n```\n{\n  \"error\": \"Unexpected server error\"\n}\n\n ```\n\n---\n\n## 6\\. CURL Request\n\n```\ncurl --location 'http://localhost:8000/api/sales/1' \\\n--header 'Accept: application/json' \\\n--header 'Authorization: Bearer 1|aROQwb9fT9cJWWZyaOOIq9rzXgbmThXe1Coz2f4ra9740dd8'\n\n ```\n\n---\n\n## 7\\. Exemplos de ID válidos e inválidos\n\n| Exemplo | Situação |\n| --- | --- |\n| `/api/sales/10` | válido se existir |\n| `/api/sales/999999` | válido mas provável not found |\n| `/api/sales/abc` | inválido (não numérico) |\n| `/api/sales/-1` | inválido (valor negativo) |\n\n---\n\n## 8\\. Tabela Resumo\n\n| Campo | Local | Tipo | Obrigatório | Restrições |\n| --- | --- | --- | --- | --- |\n| sale_id | Path | numeric | Sim | Deve existir e ser numérico |"
+					},
+					"response": []
+				},
+				{
+					"name": "List",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/sales/list?page=1&per_page=15&order=asc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sales",
+								"list"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "per_page",
+									"value": "15"
+								},
+								{
+									"key": "order",
+									"value": "asc"
+								}
+							]
+						},
+						"description": "## 1\\. Objetivo do Endpoint\n\nListar vendas registradas no sistema com paginação e ordenação, retornando informações resumidas de cada venda.\n\n---\n\n## 2\\. Título, Descrição e Contexto de Uso\n\n**Título:** Listar Vendas  \n**Descrição:** Retorna uma lista paginada de vendas, permitindo filtrar a quantidade de registros por página e a ordem (ascendente ou descendente).  \n**Contexto de Uso:** Consultas administrativas, dashboards, relatórios financeiros, histórico de vendas e exportação de dados.\n\n---\n\n## 3\\. Detalhes Técnicos\n\n| Item | Valor |\n| --- | --- |\n| Método HTTP | GET |\n| Path | `/api/sales/list` |\n| Query Params | page, per_page, order |\n| Autenticação | Obrigatória (Bearer Token) |\n| Permissões | Usuário autenticado com acesso ao módulo de vendas |\n\n---\n\n## 4\\. Campos Aceitos (Query Params)\n\n| Campo | Tipo | Obrigatório | Restrições | Descrição |\n| --- | --- | --- | --- | --- |\n| page | numeric | Sim | min:1 | Número da página a ser retornada |\n| per_page | numeric | Não | min:1 | Número de registros por página (padrão: 15) |\n| order | string | Não | enum: asc, desc | Ordenação dos resultados |\n\n---\n\n### Exemplos válidos\n\n```\n/api/sales/list?page=1&per_page=15&order=asc\n/api/sales/list?page=2&order=desc\n/api/sales/list?page=1\n\n ```\n\n### Exemplos inválidos\n\n| Exemplo | Motivo |\n| --- | --- |\n| `/api/sales/list?page=0` | page < 1 |\n| `/api/sales/list?page=abc` | tipo inválido |\n| `/api/sales/list?order=up` | valor não permitido |\n\n---\n\n## 5\\. Possíveis Respostas\n\n### 200 - OK\n\n```\n{\n  \"sales\": [\n    {\n      \"id\": 1,\n      \"customer_id\": 5,\n      \"total_amount\": 120.50,\n      \"discount_amount\": 10.00,\n      \"status\": \"COMPLETED\",\n      \"created_at\": \"2025-01-01T12:00:00Z\"\n    },\n    {\n      \"id\": 2,\n      \"customer_id\": 3,\n      \"total_amount\": 50.00,\n      \"discount_amount\": 0,\n      \"status\": \"COMPLETED\",\n      \"created_at\": \"2025-01-02T09:30:00Z\"\n    }\n  ]\n}\n\n ```\n\n### 400 - Bad Request\n\n```\n{\n  \"error\": \"Invalid request format\"\n}\n\n ```\n\n### 401 - Unauthorized\n\n```\n{\n  \"message\": \"Unauthenticated.\"\n}\n\n ```\n\n### 422 - Validation Error\n\n```\n{\n  \"message\": \"The given data was invalid.\",\n  \"errors\": {\n    \"page\": [\n      \"The page must be at least 1.\"\n    ]\n  }\n}\n\n ```\n\n### 500 - Internal Server Error\n\n```\n{\n  \"error\": \"Unexpected server error\"\n}\n\n ```\n\n---\n\n## 6\\. CURL Request\n\n```\ncurl --location 'http://localhost:8000/api/sales/list?page=1&per_page=15&order=asc' \\\n--header 'Accept: application/json' \\\n--header 'Authorization: Bearer 1|aROQwb9fT9cJWWZyaOOIq9rzXgbmThXe1Coz2f4ra9740dd8'\n\n ```\n\n---\n\n## 7\\. Observações de Enum `order`\n\n| Valor | Significado |\n| --- | --- |\n| asc | Ordenação ascendente (mais antigo → mais recente) |\n| desc | Ordenação descendente (mais recente → mais antigo) |\n\n---\n\n## 8\\. Tabela Resumo dos Campos\n\n| Campo | Local | Tipo | Obrigatório | Restrições |\n| --- | --- | --- | --- | --- |\n| page | Query | numeric | Sim | min:1 |\n| per_page | Query | numeric | Não | min:1 |\n| order | Query | string | Não | enum: asc, desc |"
+					},
+					"response": []
+				},
+				{
+					"name": "Refund",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/sales/:sale_id/refund",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sales",
+								":sale_id",
+								"refund"
+							],
+							"variable": [
+								{
+									"key": "sale_id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "## 1\\. Objetivo do Endpoint\n\nRegistrar o estorno (refund) de uma venda específica, revertendo o pagamento e atualizando o status da transação no sistema.\n\n---\n\n## 2\\. Título, Descrição e Contexto de Uso\n\n**Título:** Estornar Venda  \n**Descrição:** Permite estornar uma venda já registrada, alterando o status da venda e, se aplicável, processando o estorno do pagamento.  \n**Contexto de Uso:** Atendimento ao cliente, correção de vendas indevidas, devoluções ou reembolsos.\n\n---\n\n## 3\\. Detalhes Técnicos\n\n| Item | Valor |\n| --- | --- |\n| Método HTTP | PATCH |\n| Path | `/api/sales/{sale_id}/refund` |\n| URL Exemplo | `/api/sales/1/refund` |\n| Autenticação | Obrigatória (Bearer Token) |\n| Permissões | Usuário autenticado com permissão de gerenciamento de vendas |\n\nNão há body no request.\n\n---\n\n## 4\\. Campos Aceitos (Path Params)\n\n| Campo | Tipo | Obrigatório | Restrições | Descrição |\n| --- | --- | --- | --- | --- |\n| sale_id | numeric | Sim | Deve ser um ID válido existente | Identificador da venda a ser estornada |\n\n---\n\n### Exemplos válidos\n\n```\n/api/sales/1/refund\n/api/sales/10/refund\n\n ```\n\n### Exemplos inválidos\n\n| Exemplo | Motivo |\n| --- | --- |\n| `/api/sales/abc/refund` | ID não numérico |\n| `/api/sales/0/refund` | ID inválido (negativo ou zero) |\n| `/api/sales/9999/refund` | Venda inexistente |\n\n---\n\n## 5\\. Possíveis Respostas\n\n### 200 - OK\n\n```\n{\n  \"message\": \"Refunded successful\"\n}\n\n ```\n\n### 400 - Bad Request\n\n```\n{\n  \"error\": \"Invalid request format\"\n}\n\n ```\n\n### 401 - Unauthorized\n\n```\n{\n  \"message\": \"Unauthenticated.\"\n}\n\n ```\n\n### 404 - Not Found\n\n```\n{\n  \"message\": \"Sale not found\"\n}\n\n ```\n\n### 422 - Unprocessable Entity\n\n```\n{\n  \"message\": \"Cannot refund this sale\",\n  \"errors\": {}\n}\n\n ```\n\n### 500 - Internal Server Error\n\n```\n{\n  \"error\": \"Unexpected server error\"\n}\n\n ```\n\n---\n\n## 6\\. CURL Request\n\n```\ncurl --location --request PATCH 'http://localhost:8000/api/sales/1/refund' \\\n--header 'Accept: application/json' \\\n--header 'Authorization: Bearer 1|aROQwb9fT9cJWWZyaOOIq9rzXgbmThXe1Coz2f4ra9740dd8'\n\n ```\n\n---\n\n## 7\\. Observações\n\n- Este endpoint não requer body; o único parâmetro necessário é o `sale_id` na URL.\n    \n- Apenas vendas com status elegível para estorno podem ser processadas.\n    \n- Se o pagamento original for por cartão, o estorno será realizado no mesmo método de pagamento.\n    \n\n---\n\n## 8\\. Tabela Resumo dos Campos\n\n| Campo | Local | Tipo | Obrigatório | Restrições |\n| --- | --- | --- | --- | --- |\n| sale_id | Path | numeric | Sim | Deve existir e ser numérico |"
+					},
+					"response": []
+				},
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_id\": 1,\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 1\n        },\n        {\n            \"product_id\": 5,\n            \"quantity\": 33\n        }\n    ],\n    \"payment\": {\n        \"payment_method\": \"CREDIT_CARD\",\n        \"card_number\": \"1234123412341234\",\n        \"cvv\": \"123\"\n    },\n    \"discount_amount\": 10.00\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/sales",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sales"
+							]
+						},
+						"description": "## 1\\. Objetivo do Endpoint\n\nRegistrar uma nova venda vinculada a um cliente, contendo produtos, quantidades, forma de pagamento e desconto aplicado.\n\n---\n\n## 2\\. Título, Descrição e Contexto de Uso\n\n**Título:** Registro de Venda  \n**Descrição:** Cria uma venda contendo itens, valores e método de pagamento, armazenando no sistema e retornando o registro recém-criado.  \n**Contexto de Uso:** Aplicações de PDV, ERP, e-commerce interno ou qualquer solução administrativa que precise registrar vendas transacionais.\n\n---\n\n## 3\\. Detalhes Técnicos\n\n| Item | Valor |\n| --- | --- |\n| Método HTTP | POST |\n| Path | `/api/sales` |\n| Autenticação | Obrigatória (Bearer Token) |\n| Permissões | Usuário autenticado com acesso ao módulo de vendas |\n\n---\n\n## 4\\. Campos Aceitos (Body JSON)\n\n| Campo | Tipo | Obrigatório | Restrições | Descrição |\n| --- | --- | --- | --- | --- |\n| customer_id | numeric | Sim | \\- | ID do cliente |\n| items | array | Sim | min:1 | Lista de produtos da venda |\n| items.\\*.product_id | numeric | Sim | distinct | ID do produto |\n| items.\\*.quantity | numeric | Sim | min:0 | Quantidade do produto |\n| payment | array | Sim | \\- | Informações de pagamento |\n| payment.payment_method | string | Sim | enum: CREDIT_CARD, DEBIT_CARD, PIX, MONEY | Tipo de pagamento |\n| payment.card_number | string | Condicional | required_if método for cartão, digits:16 | Número do cartão |\n| payment.cvv | string | Condicional | required_if método for cartão, digits:3 | Código de segurança |\n| discount_amount | numeric | Sim | min:0 | Valor de desconto aplicado |\n\n---\n\n### Exemplos válidos\n\n```\n{\n  \"customer_id\": 10,\n  \"items\": [\n    {\n      \"product_id\": 2,\n      \"quantity\": 3\n    }\n  ],\n  \"payment\": {\n    \"payment_method\": \"CREDIT_CARD\",\n    \"card_number\": \"5555555555554444\",\n    \"cvv\": \"321\"\n  },\n  \"discount_amount\": 5\n}\n\n ```\n\n```\n{\n  \"customer_id\": 7,\n  \"items\": [\n    {\n      \"product_id\": 12,\n      \"quantity\": 10\n    }\n  ],\n  \"payment\": {\n    \"payment_method\": \"PIX\"\n  },\n  \"discount_amount\": 0\n}\n\n ```\n\n---\n\n### Exemplos inválidos\n\n| Exemplo | Motivo |\n| --- | --- |\n| `customer_id: null` | required |\n| `items: []` | array vazio |\n| `items.\\\\*.product_id: \"abc\"` | tipo inválido |\n| `payment.payment_method: \"CREDIT_CARD\"` | valor não permitido |\n| `payment.cvv: \"12\"` | tamanho incorreto |\n| `discount_amount: -3` | min inválido |\n\n---\n\n## 5\\. Possíveis Respostas\n\n### 201 - Created\n\n```\n{\n  \"message\": \"Registration successful\",\n  \"sale\": {\n    \"id\": 99,\n    \"customer_id\": 1,\n    \"discount_amount\": 10,\n    \"created_at\": \"2025-01-01T12:00:00Z\"\n  }\n}\n\n ```\n\n### 400 - Bad Request\n\n```\n{\n  \"error\": \"Invalid request format\"\n}\n\n ```\n\n### 401 - Unauthorized\n\n```\n{\n  \"message\": \"Unauthenticated.\"\n}\n\n ```\n\n### 422 - Validation Error\n\n```\n{\n  \"message\": \"The given data was invalid.\",\n  \"errors\": {\n    \"payment.card_number\": [\n      \"The payment.card_number field is required when payment.payment_method is CREDIT_CARD.\"\n    ]\n  }\n}\n\n ```\n\n### 500 - Internal Server Error\n\n```\n{\n  \"error\": \"Unexpected server error\"\n}\n\n ```\n\n---\n\n## 6\\. CURL e Exemplos\n\n### CURL\n\n```\ncurl --location 'http://localhost:8000/api/sales' \\\n--header 'Accept: application/json' \\\n--header 'Content-Type: application/json' \\\n--header 'Authorization: Bearer {token}' \\\n--data '{\n    \"customer_id\": 1,\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 1\n        },\n        {\n            \"product_id\": 5,\n            \"quantity\": 33\n        }\n    ],\n    \"payment\": {\n        \"payment_method\": \"CREDIT_CARD\",\n        \"card_number\": \"1234123412341234\",\n        \"cvv\": \"123\"\n    },\n    \"discount_amount\": 10.00\n}'\n\n ```\n\n---\n\n## 7\\. ENUM `payment_method`\n\n| Valor | Significado |\n| --- | --- |\n| CREDIT_CARD | Pagamento com cartão de crédito |\n| DEBIT_CARD | Pagamento com cartão de débito |\n| PIX | Transferência instantânea |\n| MONEY | Pagamento em dinheiro |\n\n---\n\n## 8\\. Tabela Resumo dos Campos\n\n| Campo | Tipo | Obrigatório | Restrições | Condicional |\n| --- | --- | --- | --- | --- |\n| customer_id | numeric | Sim | \\- | Não |\n| items | array | Sim | min:1 | Não |\n| items.\\*.product_id | numeric | Sim | distinct | Não |\n| items.\\*.quantity | numeric | Sim | min:0 | Não |\n| payment | array | Sim | \\- | Não |\n| payment.payment_method | string | Sim | enum | Não |\n| payment.card_number | string | Não | digits:16 | required_if cartão |\n| payment.cvv | string | Não | digits:3 | required_if cartão |\n| discount_amount | numeric | Sim | min:0 | Não |"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const response = pm.response.json();",
+							"if (response.token) pm.environment.set(\"token\", response.token);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"{{admin_user}}\",\n    \"password\": \"{{default_password}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/auth/login",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				},
+				"description": "### 1\\. Objetivo do Endpoint\n\nRealizar autenticação de usuários fornecendo email e senha válidos, retornando token de autenticação juntamente com os dados do usuário.\n\n---\n\n### 2\\. Título, Descrição e Contexto\n\n**Título:** Autenticação de Usuário\n\n**Descrição:**\n\nEste endpoint processa o login via credenciais (email e senha) e retorna um token JWT para acesso às rotas protegidas. O login é obrigatório para qualquer funcionalidade que exija autorização/token.\n\n**Contexto de uso:**\n\nUtilizado na tela de login, mobile ou integração externa para obter credenciais autenticadas.\n\n---\n\n### 3\\. Configurações do Endpoint\n\n| Propriedade | Valor |\n| --- | --- |\n| Método HTTP | POST |\n| Path | `/api/auth/login` |\n| Autenticação prévia | Não requerida |\n| Permissões | Público (Qualquer usuário cadastrado pode autenticar) |\n| Tipo de Conteúdo | `application/json` |\n\n---\n\n### 4\\. Campos aceitos no Body\n\n#### `email`\n\n| Atributo | Detalhe |\n| --- | --- |\n| Tipo | `string` |\n| Obrigatório | Sim |\n| Validações | `required`, `email` (RFC padrão válido) |\n| Exemplo válido | `\"admin@example.com\"` |\n| Exemplo inválido | `\"admin.com\"`, `\"\"`, `null`, `\"admin@site\"` |\n\n#### `password`\n\n| Atributo | Detalhe |\n| --- | --- |\n| Tipo | `string` |\n| Obrigatório | Sim |\n| Validações | `required`, `min:4` |\n| Exemplo válido | `\"1234\"`, `\"minhasenha\"` |\n| Exemplo inválido | `\"123\"`, `\"\"`, `null` |\n\n---\n\n### 5\\. Possíveis Respostas\n\n---\n\n#### 200 – Sucesso\n\n**Descrição:** Credenciais válidas, login autorizado.\n\n**Exemplo de resposta:**\n\n``` json\n{\n    \"message\": \"Login successful\",\n    \"user\": {\n        \"id\": 1,\n        \"name\": \"Admin User\",\n        \"email\": \"admin@example.com\"\n    },\n    \"token\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9\"\n}\n\n ```\n\n---\n\n#### 400 – Requisição inválida (formato incorreto)\n\n``` json\n{\n    \"error\": \"Invalid request format\"\n}\n\n ```\n\n---\n\n#### 401 – Não autorizado (credenciais incorretas)\n\n``` json\n{\n    \"message\": \"Invalid email or password\"\n}\n\n ```\n\n---\n\n#### 422 – Erro de validação\n\n``` json\n{\n    \"message\": \"The given data was invalid.\",\n    \"errors\": {\n        \"email\": [\"The email field is required.\"],\n        \"password\": [\"The password must be at least 4 characters.\"]\n    }\n}\n\n ```\n\n---\n\n#### 500 – Erro interno\n\n``` json\n{\n    \"message\": \"Internal server error\"\n}\n\n ```\n\n---\n\n### 6\\. Exemplo de CURL\n\n``` bash\ncurl --location 'http://localhost:8000/api/auth/login' \\\n--header 'Accept: application/json' \\\n--header 'Content-Type: application/json' \\\n--data-raw '{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password\"\n}'\n\n ```\n\n---\n\n### 7\\. Exemplo de Body JSON válido\n\n``` json\n{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password\"\n}\n\n ```\n\n---\n\n### 8\\. Exemplo de Body JSON inválido\n\n``` json\n{\n    \"email\": \"admin@\",\n    \"password\": \"123\"\n}\n\n ```\n\n---\n\n### 9\\. Tabela Resumo\n\n| Campo | Tipo | Obrigatório | Validações | Exemplo válido | Exemplo inválido |\n| --- | --- | --- | --- | --- | --- |\n| email | string | Sim | required, email | `\"user@example.com\"` | `\"user.com\"` |\n| password | string | Sim | required, min:4 | `\"abcd\"` | `\"abc\"` |"
+			},
+			"response": []
+		},
+		{
+			"name": "Logout",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.environment.unset(\"token\");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{base_url}}/auth/logout",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"auth",
+						"logout"
+					]
+				},
+				"description": "### 1\\. Objetivo do Endpoint\n\nRevogar o token de autenticação atual, encerrando a sessão do usuário previamente autenticado.\n\n---\n\n### 2\\. Título, Descrição e Contexto\n\n**Título:** Logout de Usuário\n\n**Descrição:**  \n  \nEste endpoint finaliza a sessão do usuário invalidando o token Bearer utilizado. Após o logout, o mesmo token não poderá ser reutilizado em rotas protegidas.\n\n**Contexto de uso:**  \n  \nChamado após o usuário clicar em “sair” no frontend, desconectar do app mobile ou revogar sessão ativa em dispositivos externos.\n\n---\n\n### 3\\. Configurações do Endpoint\n\n| Propriedade | Valor |\n| --- | --- |\n| Método HTTP | POST |\n| Path | `/api/auth/logout` |\n| Autenticação prévia | Obrigatória (Bearer Token válido) |\n| Permissões | Usuários autenticados |\n| Tipo de Conteúdo | `application/json` |\n| Envio de Body | Não requer body |\n\n---\n\n### 4\\. Campos aceitos no Body\n\nNenhum campo é esperado no body. O único requisito é o envio do token via Header Authorization.\n\n---\n\n### 5\\. Possíveis Respostas\n\n---\n\n#### 200 – Sucesso\n\n**Descrição:** Token foi invalidado com sucesso.\n\n``` json\n{\n    \"message\": \"Logout successful\"\n}\n\n ```\n\n---\n\n#### 400 – Requisição inválida (formato incorreto ou ausência de header)\n\n``` json\n{\n    \"error\": \"Invalid request format or missing bearer token\"\n}\n\n ```\n\n---\n\n#### 401 – Não autorizado (token inválido, expirado ou inexistente)\n\n``` json\n{\n    \"message\": \"Unauthorized\"\n}\n\n ```\n\n---\n\n#### 422 – Token mal formatado\n\n``` json\n{\n    \"message\": \"Malformed token\"\n}\n\n ```\n\n---\n\n#### 500 – Erro interno\n\n``` json\n{\n    \"message\": \"Internal server error\"\n}\n\n ```\n\n---\n\n### 6\\. Exemplo de CURL\n\n``` bash\ncurl --location --request POST 'http://localhost:8000/api/auth/logout' \\\n--header 'Accept: application/json' \\\n--header 'Authorization: Bearer SEU_TOKEN_AQUI' \\\n--data ''\n\n ```\n\n---\n\n### 7\\. Exemplo de Header Authorization válido\n\n``` json\nAuthorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9\n\n ```\n\n---\n\n### 8\\. Exemplo de Header Authorization inválido\n\n``` json\nAuthorization: Token 123\n\n ```\n\n``` json\nAuthorization: Bearer\n\n ```\n\n``` json\nAuthorization: ''\n\n ```\n\n---\n\n### 9\\. Response de exemplo (200)\n\n``` json\n{\n    \"message\": \"Logout successful\"\n}\n\n ```\n\n---\n\n### 10\\. Tabela Resumo\n\n| Campo | Tipo | Obrigatório | Validações | Exemplo válido | Exemplo inválido |\n| --- | --- | --- | --- | --- | --- |\n| Authorization | string | Sim | Bearer Token válido | `Bearer eyJ0eXAiOiJK...` | `Token 123`, vazio, omitido |"
+			},
+			"response": []
+		}
+	]
+}
