@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
             $table->foreignId('customer_id')->constrained('customers')->cascadeOnDelete();
-            $table->foreignId('transaction_id')->constrained('transactions')->cascadeOnDelete()->nullable();
+            $table->foreignId('transaction_id')->nullable()->constrained('transactions')->cascadeOnDelete();
             $table->string('payment_method')->default(PaymentMethod::MONEY->value);
             $table->double('total_amount')->default(0.0);
             $table->double('discount_amount')->default(0.0);

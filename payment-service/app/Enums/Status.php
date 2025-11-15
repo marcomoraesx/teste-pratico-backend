@@ -8,6 +8,7 @@ enum Status: string
     case CANCELED = 'CANCELED';
     case COMPLETED = 'COMPLETED';
     case FAILED = 'FAILED';
+    case REFUNDED = 'REFUNDED';
 
     public static function values(): array
     {
@@ -21,6 +22,7 @@ enum Status: string
             self::CANCELED => 'Canceled',
             self::COMPLETED => 'Completed',
             self::FAILED => 'Failed',
+            self::REFUNDED => 'Refunded',
         };
     }
 }

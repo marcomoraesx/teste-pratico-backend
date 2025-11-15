@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\GatewayController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SaleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -43,5 +44,13 @@ Route::middleware(['throttle:api', 'throttle:server-error'])->group(function () 
         ->group(function () {
             Route::get('/list', [CustomerController::class, 'list'])->middleware('permissions:customer.list');
             Route::get('/{customer_id}', [CustomerController::class, 'detail'])->middleware('permissions:customer.detail');
+        });
+    Route::prefix('sales')
+        ->middleware(['auth:sanctum', 'roles:ADMIN,FINANCE,USER'])
+        ->group(function () {
+            Route::post('/', [SaleController::class, 'register'])->withoutMiddleware(['auth:sanctum', 'roles:ADMIN,FINANCE,USER']);
+            Route::get('/list', [SaleController::class, 'list'])->middleware('permissions:sale.list');
+            Route::get('/{sale_id}', [SaleController::class, 'detail'])->middleware('permissions:sale.detail');
+            Route::patch('/{sale_id}/refund', [SaleController::class, 'refund'])->middleware('permissions:sale.refund');
         });
 });
