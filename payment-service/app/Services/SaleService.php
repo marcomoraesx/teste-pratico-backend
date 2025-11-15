@@ -49,6 +49,16 @@ class SaleService
             $net_amount = $total_amount - $discount_amount;
             $transaction = null;
             $payment = $data['payment'];
+            $sale = Sale::create([
+                'customer_id' => $customer->id,
+                'transaction_id' => null,
+                'payment_method' => PaymentMethod::from($payment['payment_method']),
+                'total_amount' => $total_amount,
+                'discount_amount' => $discount_amount,
+                'net_amount' => $net_amount,
+                'status' => Status::COMPLETED,
+            ]);
+            $sale->items()->createMany($items);
             if (in_array(PaymentMethod::from($payment['payment_method']), [PaymentMethod::CREDIT_CARD, PaymentMethod::DEBIT_CARD])) {
                 [$gateway_class_name, $external_transaction_id] = $this->payment_service->handle([
                     'total_amount' => $net_amount,
@@ -67,17 +77,10 @@ class SaleService
                     'total_amount' => $net_amount,
                     'last_digits_card' => substr($payment['card_number'], -4)
                 ]);
+                $sale->update([
+                    'transaction_id' => $transaction?->id ?? null,
+                ]);
             }
-            $sale = Sale::create([
-                'customer_id' => $customer->id,
-                'transaction_id' => $transaction?->id ?? null,
-                'payment_method' => PaymentMethod::from($payment['payment_method']),
-                'total_amount' => $total_amount,
-                'discount_amount' => $discount_amount,
-                'net_amount' => $net_amount,
-                'status' => Status::COMPLETED,
-            ]);
-            $sale->items()->createMany($items);
             return $sale;
         });
     }
@@ -108,6 +111,9 @@ class SaleService
             if (in_array($sale->payment_method, [PaymentMethod::CREDIT_CARD, PaymentMethod::DEBIT_CARD])) {
                 $transaction = $sale->transaction;
                 if (!$transaction || !$transaction->gateway) throw new BadRequestException('This sale does not have a linked transaction.');
+                $transaction->update([
+                    'status' => Status::REFUNDED
+                ]);
                 $gateway = $transaction->gateway;
                 $implementation_class = "\App\Services\Providers\\{$gateway->class_name}";
                 if (!class_exists($implementation_class)) throw new Exception("Implementation for {$gateway->name} not found.");
