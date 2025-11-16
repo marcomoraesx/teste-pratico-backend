@@ -43,7 +43,7 @@ O projeto foi desenvolvido com Test-Driven Development (TDD) — existe uma suí
 1. Clone o repositório
 ```bash
 git clone https://github.com/marcomoraesx/teste-pratico-backend.git
-cd payment-service
+cd teste-pratico-backend/payment-service
 ```
 
 2. Copiar as variáveis de ambiente
