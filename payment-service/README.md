@@ -90,7 +90,7 @@ Observação: para comandos alternativos que usem `sail` alias criado, substitua
 ## Estrutura de rotas e documentação
 
 - Todas as rotas estão definidas em `routes/api.php` e agrupadas por recursos: `auth`, `users`, `products`, `gateways`, `customers`, `sales`.
-- Existe uma Postman Collection com todos os endpoints e a aba "Docs" no Postman traz descrições completas, parâmetros e exemplos de resposta.
+- A Postman Collection (`payment-service/teste-pratico-backend-collection.postman_collection.json`) e também sua Postman Environment (`payment-service/teste-pratico-backend-environment.postman_environment.json`) contém com todos os endpoints, onde a aba "Docs" de cada endpoint traz a sua descrição completa, parâmetros e exemplos de resposta.
 
 Principais endpoints (resumo):
 
