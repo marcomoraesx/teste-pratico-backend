@@ -14,6 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prependToGroup('api', App\Http\Middleware\ForceJsonResponse::class);
+        $middleware->alias([
+            'permissions' => \App\Http\Middleware\PermissionsApiMiddleware::class,
+            'roles' => \App\Http\Middleware\RolesApiMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e) {
@@ -22,32 +26,51 @@ return Application::configure(basePath: dirname(__DIR__))
             }
             return $request->expectsJson();
         });
-        $exceptions->respond(function (Response $response) {
-            switch ($response->getStatusCode()) {
+        $exceptions->respond(function (Response $response, Throwable $e) {
+            $status = $response->getStatusCode();
+            $message = $e->getPrevious()?->getMessage() ?? $e->getMessage();
+            switch ($status) {
+                case 400:
+                    return response()->json(
+                        [
+                            'message' => $message,
+                            'code' => $status
+                        ],
+                        $status
+                    );
                 case 422:
                     return response()->json(
                         [
                             'message' => json_decode($response->getContent())->message,
                             'errors' => json_decode($response->getContent())->errors,
-                            'code' => $response->getStatusCode()
+                            'code' => $status
                         ],
-                        $response->getStatusCode()
+                        $status
                     );
                 case 429:
                     return response()->json(
                         [
                             'message' => 'Too many requests. Please try again in ' . $response->headers->get('retry-after') . ' seconds.',
-                            'code' => $response->getStatusCode()
+                            'code' => $status
                         ],
-                        $response->getStatusCode()
+                        $status
+                    );
+                case 500:
+                    return response()->json(
+                        [
+                            'message' => 'An internal server error occurred. Please try again later.',
+                            'error' => $message,
+                            'code' => $status
+                        ],
+                        $status
                     );
                 default:
                     return response()->json(
                         [
                             'message' => json_decode($response->getContent())->message,
-                            'code' => $response->getStatusCode()
+                            'code' => $status
                         ],
-                        $response->getStatusCode()
+                        $status
                     );
             }
         });

@@ -14,6 +14,8 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasApiTokens, HasRoles;
 
+    protected $guard_name = ['api'];
+
     /**
      * The attributes that are mass assignable.
      *
@@ -46,5 +48,13 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function toArray()
+    {
+        $array = parent::toArray();
+        $array['role'] = $this->roles->first()?->name;
+        unset($array['roles']);
+        return $array;
     }
 }
