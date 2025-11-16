@@ -28,8 +28,15 @@ O projeto foi desenvolvido com Test-Driven Development (TDD) — existe uma suí
 
 ## Requisitos
 
-- Docker e Docker Compose instalados na máquina de desenvolvimento.
-- Acesso à internet para baixar imagens e dependências (na primeira execução).
+- **Docker e Docker Compose** instalados na máquina de desenvolvimento.
+- **Acesso à internet** para baixar imagens e dependências (na primeira execução).
+
+> **Observações por sistema operacional:**
+>
+> - **Windows:** é recomendado utilizar o WSL e instalar o Docker/Docker Compose dentro da distribuição Linux, pois o Laravel Sail funciona melhor nesse ambiente. Um guia rápido para isso pode ser encontrado [aqui](https://gist.github.com/dehsilvadeveloper/c3bdf0f4cdcc5c177e2fe9be671820c7).  
+>   Caso não queira usar WSL, é possível instalar Docker e Docker Compose diretamente no Windows, mas será necessário executar os comandos do projeto dentro dos containers, o que pode dificultar o processo de análise.
+>
+> - **Linux:** basta ter Docker e Docker Compose instalados; todos os comandos do projeto funcionarão normalmente.
 
 ## Instalação e execução (comandos)
 
@@ -48,11 +55,13 @@ cp .env.example .env
 
 ```bash
 docker run --rm \
-	-u "$(id -u):$(id -g)" \
-	-v "$(pwd):/var/www/html" \
-	-w /var/www/html \
-	composer:latest \
-	composer install --ignore-platform-reqs
+    -u "$(id -u):$(id -g)" \
+    -v "$(pwd):/var/www/html" \
+    -w /var/www/html \
+    -e COMPOSER_PROCESS_TIMEOUT=0 \
+    -e COMPOSER_MAX_PARALLEL_HTTP=1 \
+    composer:latest \
+    composer install --ignore-platform-reqs --prefer-dist --no-progress
 ```
 
 4. Alias útil para Sail (válido apenas na sessão atual do terminal):
