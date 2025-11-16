@@ -23,7 +23,7 @@ beforeEach(function () {
 
 test('service: register success with credit card creates sale and transaction', function () {
     $customer = Customer::factory()->create();
-    $product = Product::factory()->create(['price' => 50]);
+    $product = Product::factory()->create(['price' => 50, 'stock' => 10]);
     $gateway = Gateway::factory()->create(['class_name' => 'TestGatewayProvider']);
     $this->paymentMock->shouldReceive('handle')
         ->once()
@@ -80,7 +80,7 @@ test('service: list error with invalid order throws InvalidArgumentException', f
 
 test('service: refund success refunds card sale and transaction', function () {
     $customer = Customer::factory()->create();
-    $product = Product::factory()->create(['price' => 50]);
+    $product = Product::factory()->create(['price' => 50, 'stock' => 10]);
     $gateway = Gateway::factory()->create(['class_name' => 'TestGatewayProvider']);
     $this->paymentMock->shouldReceive('handle')
         ->once()

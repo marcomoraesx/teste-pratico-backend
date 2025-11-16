@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('description', 255)->min(3);
             $table->boolean('is_active')->default(true);
             $table->double('price')->default(0.0);
-            $table->integer('stock')->default(0);
+            $table->integer('stock')->min(0)->default(0);
             $table->timestamps();
         });
     }

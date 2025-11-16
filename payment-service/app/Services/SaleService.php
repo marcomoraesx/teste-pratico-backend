@@ -36,6 +36,7 @@ class SaleService
             $net_amount = 0;
             foreach ($products as $product) {
                 $item = collect($data['items'])->firstWhere('product_id', $product->id);
+                if ($item['quantity'] > $product->stock) throw new BadRequestException('Insufficient stock for the product: ' . $product->name);
                 $item_total_amount = $item['quantity'] * $product->price;
                 $items[] = [
                     'product_id' => $product->id,

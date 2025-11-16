@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -20,6 +21,16 @@ return new class extends Migration
             $table->double('total_amount')->default(0.0);
             $table->timestamps();
         });
+        DB::unprepared("
+            CREATE TRIGGER trg_debit_product_stock_after_insert
+            AFTER INSERT ON sale_items
+            FOR EACH ROW
+            BEGIN
+                UPDATE products
+                SET stock = stock - NEW.quantity
+                WHERE id = NEW.product_id;
+            END
+        ");
     }
 
     /**
@@ -28,5 +39,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('sale_items');
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_debit_product_stock_after_insert");
     }
 };
